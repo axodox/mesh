@@ -7,6 +7,7 @@
 
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
+#include "infrastructure/logger.hpp"
 #include "networking/wifi.hpp"
 
 using namespace std;
@@ -17,7 +18,7 @@ using namespace mesh::networking;
 
 extern "C" void app_main()
 {
-  printf("Hello world!\n");
+  log_message(log_severity::info, "Starting...");
   dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection>{ return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); } );
 
   try
@@ -26,9 +27,11 @@ extern "C" void app_main()
   }
   catch (const exception &e)
   {
-    printf("Fatal: %s\n", e.what());
-    printf("Restarting in 5 seconds...\n");
+    log_message(log_severity::fatal, e.what());
+    log_message(log_severity::info, "Restarting in 5 seconds...");
     sleep_for(seconds(5));
     esp_restart();
   }
+
+  log_message(log_severity::info, "Started.");
 }

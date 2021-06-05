@@ -16,7 +16,7 @@ namespace mesh::infrastructure
     _key(key),
     _handler(handler)
   {
-    printf("Event handler added.\n");
+    _logger.log_message(log_severity::debug, "Event handler added.");
   }
 
   event_loop_subscription::event_loop_subscription(event_loop_subscription &&other)
@@ -52,10 +52,10 @@ namespace mesh::infrastructure
       {
         check_result(esp_event_handler_unregister(_key.source, _key.event, &event_loop::on_event));
       }
-      printf("Event unsubscribed.\n");
+      _logger.log_message(log_severity::debug, "Event unsubscribed.");
     }
 
-    printf("Event handler removed.\n");
+    _logger.log_message(log_severity::debug, "Event handler removed.");
   }
 
   event_loop::event_loop(const char *name)
@@ -97,7 +97,7 @@ namespace mesh::infrastructure
       {
         check_result(esp_event_handler_register(source, event, &event_loop::on_event, this));
       }
-      printf("Event subscribed.\n");
+      _logger.log_message(log_severity::debug, "Event subscribed.");
     }
 
     auto it = handlers.insert(handlers.end(), handler);
@@ -117,7 +117,7 @@ namespace mesh::infrastructure
 
   void event_loop::on_event(void *that, esp_event_base_t source, int32_t event, void *arg)
   {
-    printf("Event received.\n");
+    _logger.log_message(log_severity::debug, "Event received.");
     auto loop = static_cast<event_loop *>(that);
     lock_guard<mutex> lock(loop->_handlers->mutex);
 
@@ -131,8 +131,8 @@ namespace mesh::infrastructure
       }
       catch(const exception& e)
       {
-        printf("Fatal: %s\n", e.what());
-        printf("Restarting in 5 seconds...\n");
+        _logger.log_message(log_severity::fatal, e.what());
+        _logger.log_message(log_severity::info, "Restarting in 5 seconds...");
         sleep_for(seconds(5));
         esp_restart();
       }

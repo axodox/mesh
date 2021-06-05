@@ -3,6 +3,7 @@
 
 #include "esp_wifi.h"
 #include "infrastructure/event_loop.hpp"
+#include "infrastructure/logger.hpp"
 
 namespace mesh::networking
 {
@@ -15,6 +16,8 @@ namespace mesh::networking
 
   class wifi_connection
   {
+    static constexpr infrastructure::logger _logger{"wifi_connection"};
+ 
   public:
     wifi_connection(const char* ssid, const char* password);
     ~wifi_connection();

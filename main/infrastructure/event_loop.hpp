@@ -7,6 +7,7 @@
 #include "esp_event.h"
 #include "hasher.hpp"
 #include "event_handler.hpp"
+#include "logger.hpp"
 
 namespace mesh::infrastructure
 {
@@ -27,6 +28,8 @@ namespace mesh::infrastructure
 
   class event_loop_subscription
   {
+    static constexpr logger _logger{"event_loop_subscription"};
+
   private:
     std::weak_ptr<event_loop_handler_collection> _handlers;
     event_key _key;
@@ -48,6 +51,7 @@ namespace mesh::infrastructure
   class event_loop
   {
     friend class event_loop_subscription;
+    static constexpr logger _logger{"event_loop"};
 
   public:
     event_loop(const char* name = nullptr);

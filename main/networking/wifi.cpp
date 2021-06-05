@@ -21,7 +21,7 @@ namespace mesh::networking
     _on_connected(_event_loop->subscribe(WIFI_EVENT, WIFI_EVENT_STA_CONNECTED, { this, &wifi_connection::on_connected })),
     _on_disconnected(_event_loop->subscribe(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, { this, &wifi_connection::on_disconnected }))
   {
-    printf("Initializing Wi-Fi...\n");
+    _logger.log_message(log_severity::info, "Initializing...");
     dependencies.resolve<nvs>();
     
     check_result(esp_netif_init());
@@ -57,23 +57,24 @@ namespace mesh::networking
 
   void wifi_connection::on_sta_started(void* arg)
   {
-    printf("Connecting to Wi-Fi...\n");
+    _logger.log_message(log_severity::info, "Connecting...");
     check_result(esp_wifi_connect());
   }
 
   void wifi_connection::on_connected(void* arg)
   {
-    printf("Connected to Wi-Fi.\n");
+    _logger.log_message(log_severity::info, "Connected.");
     _is_connected = true;
   }
 
   void wifi_connection::on_disconnected(void* arg)
   {
-    printf("Disconnected from Wi-Fi.\n");
+    _logger.log_message(log_severity::warning, "Disconnected.");
     _is_connected = false;
 
     if(!_is_disposing)
     {
+      _logger.log_message(log_severity::warning, "Reconnecting...");
       check_result(esp_wifi_connect());
     }
   }

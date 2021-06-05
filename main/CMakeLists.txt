@@ -3,6 +3,8 @@ idf_component_register(SRCS "main.cpp"
                             "infrastructure/error.cpp"
                             "infrastructure/event_loop.cpp"
                             "infrastructure/hasher.cpp"
+                            "infrastructure/logger.cpp"
+                            "infrastructure/text.cpp"
                             "networking/wifi.cpp"
                             "storage/nvs.cpp"
                        INCLUDE_DIRS ".")
