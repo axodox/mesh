@@ -1,13 +1,20 @@
 #include <stdio.h>
+#include <memory>
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 
+#include "networking/wifi.hpp"
+
+using namespace mesh::networking;
+
 extern "C" void app_main()
 {
     printf("Hello world!\n");
+
+    wifi_connection connection{};
 
     /* Print chip information */
     esp_chip_info_t chip_info;

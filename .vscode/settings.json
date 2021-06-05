@@ -5,5 +5,18 @@
   "idf.customExtraVars": "{\"OPENOCD_SCRIPTS\":\"C:\\\\Users\\\\Axodox\\\\.espressif\\\\tools\\\\openocd-esp32\\\\v0.10.0-esp32-20200709/openocd-esp32/share/openocd/scripts\",\"IDF_CCACHE_ENABLE\":\"1\"}",
   "idf.espIdfPathWin": "C:\\Users\\Axodox\\esp\\esp-idf",
   "idf.portWin": "COM9",
-  "idf.pythonBinPathWin": "C:\\Users\\Axodox\\.espressif\\python_env\\idf4.2_py3.9_env\\Scripts\\python.exe"
+  "idf.pythonBinPathWin": "C:\\Users\\Axodox\\.espressif\\python_env\\idf4.2_py3.9_env\\Scripts\\python.exe",
+  "files.associations": {
+    "optional": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp",
+    "ratio": "cpp",
+    "system_error": "cpp",
+    "array": "cpp",
+    "functional": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp",
+    "*.ipp": "cpp"
+  }
 }
