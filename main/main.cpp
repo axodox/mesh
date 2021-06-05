@@ -5,8 +5,7 @@
 #include <chrono>
 #include <string>
 
-#include "nvs_flash.h"
-
+#include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "networking/wifi.hpp"
 
@@ -19,11 +18,11 @@ using namespace mesh::networking;
 extern "C" void app_main()
 {
   printf("Hello world!\n");
+  dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection>{ return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); } );
 
   try
   {
-    check_result(nvs_flash_init());
-    wifi_connection connection("Axodox-Ranged", "88gypARK");
+    dependencies.resolve<wifi_connection>();
   }
   catch (const exception &e)
   {

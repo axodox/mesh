@@ -1,4 +1,8 @@
-idf_component_register(SRCS "main.cpp" 
-                            "infrastructure/error.cpp" 
+idf_component_register(SRCS "main.cpp"
+                            "infrastructure/dependencies.cpp"
+                            "infrastructure/error.cpp"
+                            "infrastructure/event_loop.cpp"
+                            "infrastructure/hasher.cpp"
                             "networking/wifi.cpp"
+                            "storage/nvs.cpp"
                        INCLUDE_DIRS ".")

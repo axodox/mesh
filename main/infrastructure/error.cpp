@@ -4,10 +4,10 @@ using namespace std;
 
 namespace mesh::infrastructure
 {
-  esp32_error::esp32_error(esp_err_t errorCode, const char* file, int lineNumber) :
-    error_code(errorCode)
+  esp32_error::esp32_error(esp_err_t error_code, const char* file, int line_number) :
+    error_code(error_code)
   { 
-    message = "Exception encountered in " + string(file) + " on line " + to_string(lineNumber);
+    message = "Exception encountered in " + string(file) + " on line " + to_string(line_number);
 
 #ifdef CONFIG_ESP_ERR_TO_NAME_LOOKUP
     message += ": " + string(esp_err_to_name(error_code));
@@ -21,8 +21,8 @@ namespace mesh::infrastructure
     return message.c_str();
   }
 
-  void throw_result(const esp_err_t& error, const char* file, int lineNumber)
+  void throw_result(const esp_err_t& error, const char* file, int line_number)
   {
-    if(error != ESP_OK) throw esp32_error(error, file, lineNumber);
+    if(error != ESP_OK) throw esp32_error(error, file, line_number);
   }
 }
