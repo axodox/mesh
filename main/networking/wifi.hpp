@@ -14,7 +14,7 @@ namespace mesh::networking
   class wifi_connection
   {
   public:
-    wifi_connection();
+    wifi_connection(const char* ssid, const char* password);
   
   private:
     esp_netif_handle_t _station;
