@@ -10,6 +10,7 @@
 #include "infrastructure/logger.hpp"
 #include "networking/http_server.hpp"
 #include "networking/wifi.hpp"
+#include "peripherals/integrated_led.hpp"
 #include "storage/embedded.hpp"
 
 using namespace std;
@@ -17,6 +18,7 @@ using namespace std::chrono;
 using namespace std::this_thread;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
+using namespace mesh::peripherals;
 
 define_file(favicon, "_binary_favicon_png_start", "_binary_favicon_png_end");
 
@@ -36,6 +38,19 @@ extern "C" void app_main()
 
     server->add_handler(http_query_method::get, "/favicon.png", [](http_query& query) {
       query.return_blob("image/png", favicon);
+    });
+
+    server->add_handler(http_query_method::put, "/led/*", [](http_query& query) {
+      auto& led = dependencies.resolve<integrated_led>();
+      
+      if(strcmp(query.uri(), "/led/on") == 0)
+      {
+        led->state(true);
+      }
+      else if(strcmp(query.uri(), "/led/off") == 0)
+      {
+        led->state(false);
+      }
     });
 
     server->start();
