@@ -25,7 +25,12 @@ extern "C" void app_main()
   try
   {
     dependencies.resolve<wifi_connection>();
-    dependencies.resolve<http_server>();
+    auto server = dependencies.resolve<http_server>();
+
+    server->add_handler(http_query_method::get, "/", [](http_query& query) {
+      auto stream = query.stream();
+      stream.print("<!DOCTYPE html><html><body>Hello World!</html></body>");
+    });
   }
   catch (const exception &e)
   {

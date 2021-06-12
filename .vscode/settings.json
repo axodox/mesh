@@ -71,6 +71,7 @@
     "typeinfo": "cpp",
     "typeindex": "cpp",
     "*.inc": "c",
-    "esp_event.h": "c"
+    "esp_event.h": "c",
+    "shared_mutex": "cpp"
   }
 }
