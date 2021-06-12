@@ -25,8 +25,11 @@ namespace mesh::networking
     };
 
   public:
-    http_server();
+    http_server() = default;
     ~http_server();
+
+    void start();
+    void stop();
 
     void add_handler(http_query_method method, const char* uri, const http_handler_t& handler);
 

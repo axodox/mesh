@@ -37,6 +37,8 @@ extern "C" void app_main()
     server->add_handler(http_query_method::get, "/favicon.png", [](http_query& query) {
       query.return_blob("image/png", favicon);
     });
+
+    server->start();
   }
   catch (const exception &e)
   {
