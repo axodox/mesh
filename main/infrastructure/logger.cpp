@@ -25,14 +25,14 @@ namespace mesh::infrastructure
   void log_message(log_severity severity, const char *format, ...)
   {
     va_list arg;
-    auto text = format_text(">> %s: %s\n", to_string(severity), format_text(format, arg).c_str());
+    auto text = format_text("= %s >> %s\n", to_string(severity), format_text(format, arg).c_str());
     printf(text.c_str());
   }
 
   void logger::log_message(log_severity severity, const char *format, ...) const
   {
     va_list arg;
-    auto text = format_text(">> %s: %s - %s\n", to_string(severity), _name, format_text(format, arg).c_str());
+    auto text = format_text("= %s / %s >> %s\n", to_string(severity), _name, format_text(format, arg).c_str());
     printf(text.c_str());
   }
 }
