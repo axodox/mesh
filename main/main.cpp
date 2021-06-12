@@ -8,6 +8,7 @@
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "infrastructure/logger.hpp"
+#include "networking/http.hpp"
 #include "networking/wifi.hpp"
 
 using namespace std;
@@ -24,6 +25,7 @@ extern "C" void app_main()
   try
   {
     dependencies.resolve<wifi_connection>();
+    dependencies.resolve<http_server>();
   }
   catch (const exception &e)
   {
