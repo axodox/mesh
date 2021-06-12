@@ -8,14 +8,17 @@
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "infrastructure/logger.hpp"
-#include "networking/http.hpp"
+#include "networking/http_server.hpp"
 #include "networking/wifi.hpp"
+#include "storage/embedded.hpp"
 
 using namespace std;
 using namespace std::chrono;
 using namespace std::this_thread;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
+
+define_file(favicon, "_binary_favicon_png_start", "_binary_favicon_png_end");
 
 extern "C" void app_main()
 {
@@ -28,8 +31,11 @@ extern "C" void app_main()
     auto server = dependencies.resolve<http_server>();
 
     server->add_handler(http_query_method::get, "/", [](http_query& query) {
-      auto stream = query.stream();
-      stream.print("<!DOCTYPE html><html><body>Hello World!</html></body>");
+      query.return_text("<!DOCTYPE html><html><head><link rel=\"shortcut icon\" type=\"image/png\" href=\"/favicon.png\"/></head><body>Hello World!</html></body>");
+    });
+
+    server->add_handler(http_query_method::get, "/favicon.png", [](http_query& query) {
+      query.return_blob("image/png", favicon);
     });
   }
   catch (const exception &e)

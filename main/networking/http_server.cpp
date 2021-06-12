@@ -1,46 +1,10 @@
-#include "http.hpp"
+#include "http_server.hpp"
 #include "infrastructure/error.hpp"
 
 using namespace mesh::infrastructure;
 
 namespace mesh::networking
 {
-  const char* to_string(http_query_method method)
-  {
-    switch (method)
-    {
-    case http_query_method::get:
-      return "GET";
-    case http_query_method::post:
-      return "POST";
-    case http_query_method::put:
-      return "PUT";
-    case http_query_method::del:
-      return "DELETE";
-    default:
-      return "UNKNOWN";
-    }
-  }
-
-  http_query::http_query(httpd_req_t* request) :
-    _request(request)
-  { }
-
-  http_query_method http_query::method() const
-  {
-    return (http_query_method)_request->method;
-  }
-
-  const char* http_query::uri() const
-  {
-    return _request->uri;
-  }
-
-  http_stream http_query::stream() const
-  {
-    return http_stream(_request);
-  }
-
   http_server::http_server()
   {
     _logger.log_message(log_severity::info, "Starting...");
