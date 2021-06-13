@@ -12,6 +12,7 @@ namespace mesh::networking
   {
   public:
     http_query(httpd_req_t* request);
+    ~http_query();
     http_query_method method() const;
     const char* uri() const;
 

@@ -9,6 +9,14 @@ namespace mesh::networking
     _request(request)
   { }
 
+  http_query::~http_query()
+  {
+    if(!_has_response)
+    {
+      check_result(httpd_resp_send(_request, nullptr, 0));
+    }
+  }
+
   http_query_method http_query::method() const
   {
     return (http_query_method)_request->method;
@@ -21,8 +29,8 @@ namespace mesh::networking
 
   void http_query::return_text(const char* text)
   {
-    auto stream = return_text_stream();
-    stream.print(text);
+    check_has_response();
+    check_result(httpd_resp_sendstr(_request, text));
   }
 
   http_text_stream http_query::return_text_stream()

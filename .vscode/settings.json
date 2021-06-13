@@ -73,5 +73,6 @@
     "*.inc": "c",
     "esp_event.h": "c",
     "shared_mutex": "cpp"
-  }
+  },
+  "idf.flashType": "UART"
 }

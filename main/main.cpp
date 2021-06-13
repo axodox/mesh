@@ -40,14 +40,14 @@ extern "C" void app_main()
       query.return_blob("image/png", favicon);
     });
 
-    server->add_handler(http_query_method::put, "/led/*", [](http_query& query) {
-      auto& led = dependencies.resolve<integrated_led>();
+    server->add_handler(http_query_method::put, "/api/led/*", [](http_query& query) {
+      auto led = dependencies.resolve<integrated_led>();
       
-      if(strcmp(query.uri(), "/led/on") == 0)
+      if(strcmp(query.uri(), "/api/led/on") == 0)
       {
         led->state(true);
       }
-      else if(strcmp(query.uri(), "/led/off") == 0)
+      else if(strcmp(query.uri(), "/api/led/off") == 0)
       {
         led->state(false);
       }
