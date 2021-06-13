@@ -20,12 +20,12 @@ using namespace mesh::infrastructure;
 using namespace mesh::networking;
 using namespace mesh::peripherals;
 
-define_file(file_favicon_png, "_binary_favicon_png_start", "_binary_favicon_png_end");
-define_file(file_index_html, "_binary_index_html_start", "_binary_index_html_end");
-define_file(file_main_js, "_binary_main_js_start", "_binary_main_js_end");
-define_file(file_polyfills_js, "_binary_polyfills_js_start", "_binary_polyfills_js_end");
-define_file(file_runtime_js, "_binary_runtime_js_start", "_binary_runtime_js_end");
-define_file(file_styles_css, "_binary_styles_css_start", "_binary_styles_css_end");
+define_file(file_favicon_png, "_binary_favicon_png_gz_start", "_binary_favicon_png_gz_end");
+define_file(file_index_html, "_binary_index_html_gz_start", "_binary_index_html_gz_end");
+define_file(file_main_js, "_binary_main_js_gz_start", "_binary_main_js_gz_end");
+define_file(file_polyfills_js, "_binary_polyfills_js_gz_start", "_binary_polyfills_js_gz_end");
+define_file(file_runtime_js, "_binary_runtime_js_gz_start", "_binary_runtime_js_gz_end");
+define_file(file_styles_css, "_binary_styles_css_gz_start", "_binary_styles_css_gz_end");
 
 extern "C" void app_main()
 {
@@ -51,6 +51,8 @@ extern "C" void app_main()
     });
 
     server->add_handler(http_query_method::get, "/*", [](http_query& query) {
+      query.set_header("Content-Encoding", "gzip");
+      
       if(strcmp(query.uri(), "/favicon.png") == 0)
       {
         query.return_blob("image/png", file_favicon_png);

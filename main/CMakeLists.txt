@@ -16,9 +16,9 @@ idf_component_register(SRCS
                         "storage/nvs.cpp"
                        INCLUDE_DIRS "."
                        EMBED_FILES 
-                        "www/favicon.png"
-                        "www/index.html"
-                        "www/main.js"
-                        "www/polyfills.js"
-                        "www/runtime.js"
-                        "www/styles.css")
+                        "www/favicon.png.gz"
+                        "www/index.html.gz"
+                        "www/main.js.gz"
+                        "www/polyfills.js.gz"
+                        "www/runtime.js.gz"
+                        "www/styles.css.gz")

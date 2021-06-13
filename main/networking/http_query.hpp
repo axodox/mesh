@@ -16,6 +16,8 @@ namespace mesh::networking
     http_query_method method() const;
     const char* uri() const;
 
+    void set_header(const char* field, const char* value);
+
     void return_text(const char* text);
     http_text_stream return_text_stream();
 
@@ -27,6 +29,6 @@ namespace mesh::networking
     httpd_req_t* _request = nullptr;
     bool _has_response = false;
 
-    void check_has_response();
+    void check_has_response(bool set_response = true);
   };
 }

@@ -18,6 +18,7 @@ export class AppComponent {
   async OnClick() {
     console.log("I am clicked!");
 
+    this.ledState = !this.ledState;
     if(this.ledState)
     {
       await this.http.put<string>("api/led/off", null).toPromise();
@@ -26,6 +27,5 @@ export class AppComponent {
     {
       await this.http.put<string>("api/led/on", null).toPromise();
     }
-    this.ledState = !this.ledState;
   }
 }

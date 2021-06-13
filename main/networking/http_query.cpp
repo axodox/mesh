@@ -27,6 +27,12 @@ namespace mesh::networking
     return _request->uri;
   }
 
+  void http_query::set_header(const char* field, const char* value)
+  {
+    check_has_response(false);
+    check_result(httpd_resp_set_hdr(_request, field, value));
+  }
+
   void http_query::return_text(const char* text)
   {
     check_has_response();
@@ -52,13 +58,13 @@ namespace mesh::networking
     check_result(httpd_resp_send_404(_request));
   }
 
-  void http_query::check_has_response()
+  void http_query::check_has_response(bool set_response)
   {
     if(_has_response)
     {
       throw std::logic_error("This HTTP query has a response already!");
     }
-    else
+    else if(set_response)
     {
       _has_response = true;
     }
