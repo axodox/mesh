@@ -5,6 +5,7 @@
 #include <chrono>
 #include <string>
 
+#include "infrastructure/bitwise_operations.hpp"
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "infrastructure/logger.hpp"
@@ -30,58 +31,34 @@ define_file(file_styles_css, "_binary_styles_css_gz_start", "_binary_styles_css_
 extern "C" void app_main()
 {
   log_message(log_severity::info, "Starting...");
-  dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection>{ return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); } );
+  dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection> { return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); });
 
   try
   {
     dependencies.resolve<wifi_connection>();
     auto server = dependencies.resolve<http_server>();
 
-    server->add_handler(http_query_method::put, "/api/led/*", [](http_query& query) {
+    server->add_handler(http_query_method::put, "/api/led/*", [](http_query &query)
+    {
       auto led = dependencies.resolve<integrated_led>();
-      
-      if(strcmp(query.uri(), "/api/led/on") == 0)
+
+      if (strcmp(query.uri(), "/api/led/on") == 0)
       {
         led->state(true);
       }
-      else if(strcmp(query.uri(), "/api/led/off") == 0)
+      else if (strcmp(query.uri(), "/api/led/off") == 0)
       {
         led->state(false);
       }
     });
 
-    server->add_handler(http_query_method::get, "/*", [](http_query& query) {
-      query.set_header("Content-Encoding", "gzip");
-      
-      if(strcmp(query.uri(), "/favicon.png") == 0)
-      {
-        query.return_blob("image/png", file_favicon_png);
-      }
-      else if(strcmp(query.uri(), "/index.html") == 0 || strcmp(query.uri(), "/") == 0)
-      {
-        query.return_blob("text/html", file_index_html);
-      }
-      else if(strcmp(query.uri(), "/main.js") == 0)
-      {
-        query.return_blob("application/x-javascript", file_main_js);
-      }
-      else if(strcmp(query.uri(), "/polyfills.js") == 0)
-      {
-        query.return_blob("application/x-javascript", file_polyfills_js);
-      }
-      else if(strcmp(query.uri(), "/runtime.js") == 0)
-      {
-        query.return_blob("application/x-javascript", file_runtime_js);
-      }
-      else if(strcmp(query.uri(), "/styles.css") == 0)
-      {
-        query.return_blob("text/css", file_styles_css);
-      }
-      else
-      {
-        query.return_not_found();
-      }
-    });
+    auto static_file_options = http_static_file_options::compress_gzip;
+    server->add_static_file("/favicon.png", mime_type::png, file_favicon_png, static_file_options);
+    server->add_static_file("/index.html", mime_type::html, file_index_html, bitwise_or(static_file_options, http_static_file_options::redirect_root));
+    server->add_static_file("/main.js", mime_type::js, file_main_js, static_file_options);
+    server->add_static_file("/polyfills.js", mime_type::js, file_polyfills_js, static_file_options);
+    server->add_static_file("/runtime.js", mime_type::js, file_runtime_js, static_file_options);
+    server->add_static_file("/styles.css", mime_type::css, file_styles_css, static_file_options);
 
     server->start();
   }

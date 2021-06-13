@@ -6,6 +6,7 @@ idf_component_register(SRCS
                         "infrastructure/hasher.cpp"
                         "infrastructure/logger.cpp"
                         "infrastructure/text.cpp"
+                        "networking/mime_type.cpp"
                         "networking/http_query_method.cpp"
                         "networking/http_text_stream.cpp"
                         "networking/http_query.cpp"                            
