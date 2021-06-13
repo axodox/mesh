@@ -20,7 +20,12 @@ using namespace mesh::infrastructure;
 using namespace mesh::networking;
 using namespace mesh::peripherals;
 
-define_file(favicon, "_binary_favicon_png_start", "_binary_favicon_png_end");
+define_file(file_favicon_png, "_binary_favicon_png_start", "_binary_favicon_png_end");
+define_file(file_index_html, "_binary_index_html_start", "_binary_index_html_end");
+define_file(file_main_js, "_binary_main_js_start", "_binary_main_js_end");
+define_file(file_polyfills_js, "_binary_polyfills_js_start", "_binary_polyfills_js_end");
+define_file(file_runtime_js, "_binary_runtime_js_start", "_binary_runtime_js_end");
+define_file(file_styles_css, "_binary_styles_css_start", "_binary_styles_css_end");
 
 extern "C" void app_main()
 {
@@ -32,14 +37,6 @@ extern "C" void app_main()
     dependencies.resolve<wifi_connection>();
     auto server = dependencies.resolve<http_server>();
 
-    server->add_handler(http_query_method::get, "/", [](http_query& query) {
-      query.return_text("<!DOCTYPE html><html><head><link rel=\"shortcut icon\" type=\"image/png\" href=\"/favicon.png\"/></head><body>Hello World!</html></body>");
-    });
-
-    server->add_handler(http_query_method::get, "/favicon.png", [](http_query& query) {
-      query.return_blob("image/png", favicon);
-    });
-
     server->add_handler(http_query_method::put, "/api/led/*", [](http_query& query) {
       auto led = dependencies.resolve<integrated_led>();
       
@@ -50,6 +47,37 @@ extern "C" void app_main()
       else if(strcmp(query.uri(), "/api/led/off") == 0)
       {
         led->state(false);
+      }
+    });
+
+    server->add_handler(http_query_method::get, "/*", [](http_query& query) {
+      if(strcmp(query.uri(), "/favicon.png") == 0)
+      {
+        query.return_blob("image/png", file_favicon_png);
+      }
+      else if(strcmp(query.uri(), "/index.html") == 0 || strcmp(query.uri(), "/") == 0)
+      {
+        query.return_blob("text/html", file_index_html);
+      }
+      else if(strcmp(query.uri(), "/main.js") == 0)
+      {
+        query.return_blob("application/x-javascript", file_main_js);
+      }
+      else if(strcmp(query.uri(), "/polyfills.js") == 0)
+      {
+        query.return_blob("application/x-javascript", file_polyfills_js);
+      }
+      else if(strcmp(query.uri(), "/runtime.js") == 0)
+      {
+        query.return_blob("application/x-javascript", file_runtime_js);
+      }
+      else if(strcmp(query.uri(), "/styles.css") == 0)
+      {
+        query.return_blob("text/css", file_styles_css);
+      }
+      else
+      {
+        query.return_not_found();
       }
     });
 

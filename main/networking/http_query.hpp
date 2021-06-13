@@ -21,6 +21,8 @@ namespace mesh::networking
 
     void return_blob(const char* mime_type, const infrastructure::array_view<uint8_t>& data);
 
+    void return_not_found();
+
   private:
     httpd_req_t* _request = nullptr;
     bool _has_response = false;

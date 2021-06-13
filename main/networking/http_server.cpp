@@ -22,6 +22,7 @@ namespace mesh::networking
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.max_uri_handlers = uint16_t(_handlers.size());
+    config.lru_purge_enable = true;
     check_result(httpd_start(&_server, &config));
 
     for(auto& handler : _handlers)

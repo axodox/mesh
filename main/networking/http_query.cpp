@@ -46,6 +46,12 @@ namespace mesh::networking
     check_result(httpd_resp_send(_request, reinterpret_cast<const char*>(data.begin()), ssize_t(data.size())));
   }
 
+  void http_query::return_not_found()
+  {
+    check_has_response();
+    check_result(httpd_resp_send_404(_request));
+  }
+
   void http_query::check_has_response()
   {
     if(_has_response)
