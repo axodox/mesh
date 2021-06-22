@@ -12,6 +12,11 @@ namespace mesh::infrastructure
     item_t* _end;
 
   public:
+    array_view() :
+      _start(nullptr),
+      _end(nullptr)
+    { }
+
     constexpr array_view(item_t* start, item_t* end) :
       _start(start),
       _end(end)

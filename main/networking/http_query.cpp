@@ -9,6 +9,14 @@ namespace mesh::networking
     _request(request)
   { }
 
+  http_query::~http_query()
+  {
+    if(!_has_response)
+    {
+      check_result(httpd_resp_send(_request, nullptr, 0));
+    }
+  }
+
   http_query_method http_query::method() const
   {
     return (http_query_method)_request->method;
@@ -19,10 +27,16 @@ namespace mesh::networking
     return _request->uri;
   }
 
+  void http_query::set_header(const char* field, const char* value)
+  {
+    check_has_response(false);
+    check_result(httpd_resp_set_hdr(_request, field, value));
+  }
+
   void http_query::return_text(const char* text)
   {
-    auto stream = return_text_stream();
-    stream.print(text);
+    check_has_response();
+    check_result(httpd_resp_sendstr(_request, text));
   }
 
   http_text_stream http_query::return_text_stream()
@@ -38,13 +52,19 @@ namespace mesh::networking
     check_result(httpd_resp_send(_request, reinterpret_cast<const char*>(data.begin()), ssize_t(data.size())));
   }
 
-  void http_query::check_has_response()
+  void http_query::return_not_found()
+  {
+    check_has_response();
+    check_result(httpd_resp_send_404(_request));
+  }
+
+  void http_query::check_has_response(bool set_response)
   {
     if(_has_response)
     {
       throw std::logic_error("This HTTP query has a response already!");
     }
-    else
+    else if(set_response)
     {
       _has_response = true;
     }
