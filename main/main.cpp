@@ -11,6 +11,7 @@
 #include "infrastructure/logger.hpp"
 #include "networking/http_server.hpp"
 #include "networking/wifi.hpp"
+#include "networking/ntp_client.hpp"
 #include "peripherals/integrated_led.hpp"
 #include "storage/embedded.hpp"
 
@@ -28,6 +29,8 @@ define_file(file_polyfills_js, "_binary_polyfills_js_gz_start", "_binary_polyfil
 define_file(file_runtime_js, "_binary_runtime_js_gz_start", "_binary_runtime_js_gz_end");
 define_file(file_styles_css, "_binary_styles_css_gz_start", "_binary_styles_css_gz_end");
 
+auto start_time = system_clock::now();
+
 extern "C" void app_main()
 {
   log_message(log_severity::info, "Starting...");
@@ -36,10 +39,14 @@ extern "C" void app_main()
   try
   {
     dependencies.resolve<wifi_connection>();
+    dependencies.resolve<ntp_client>();
     auto server = dependencies.resolve<http_server>();
 
     server->add_handler(http_query_method::put, "/api/led/*", [](http_query &query)
     {
+      auto uptime = system_clock::now() - start_time;
+      printf("time: %lld\n", duration_cast<seconds>(uptime).count());
+
       auto led = dependencies.resolve<integrated_led>();
 
       if (strcmp(query.uri(), "/api/led/on") == 0)

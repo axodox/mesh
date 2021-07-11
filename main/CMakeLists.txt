@@ -11,6 +11,7 @@ idf_component_register(SRCS
                         "networking/http_text_stream.cpp"
                         "networking/http_query.cpp"                            
                         "networking/http_server.cpp"
+                        "networking/ntp_client.cpp"
                         "networking/wifi.cpp"
                         "peripherals/integrated_led.cpp"
                         "storage/embedded.cpp"
