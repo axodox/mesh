@@ -1,4 +1,6 @@
 idf_component_register(SRCS 
+                        "graphics/colors.cpp"
+
                         "infrastructure/dependencies.cpp"
                         "infrastructure/error.cpp"
                         "infrastructure/event_loop.cpp"
@@ -13,6 +15,8 @@ idf_component_register(SRCS
                         "networking/http_server.cpp"
                         "networking/ntp_client.cpp"
                         "networking/wifi.cpp"
+
+                        "numerics/float3.cpp"
 
                         "peripherals/integrated_led.cpp"
                         "peripherals/ws2812_strip.cpp"

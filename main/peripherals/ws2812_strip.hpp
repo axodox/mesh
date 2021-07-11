@@ -11,7 +11,7 @@ namespace mesh::peripherals
     ws2812_strip(uint8_t pin = 18, rmt_channel_t channel = RMT_CHANNEL_0);
     virtual ~ws2812_strip() override;
 
-    virtual void push_pixels(const infrastructure::array_view<color_rgb>& pixels) override;
+    virtual void push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels) override;
   
   private:
     uint32_t _signal_zero_high_ticks;

@@ -23,6 +23,7 @@ using namespace mesh::infrastructure;
 using namespace mesh::networking;
 
 using namespace mesh::peripherals; //
+using namespace mesh::graphics; //
 
 extern "C" void app_main()
 {

@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace mesh::infrastructure;
+using namespace mesh::graphics;
 
 namespace mesh::peripherals
 {
@@ -33,7 +34,7 @@ namespace mesh::peripherals
     check_result(rmt_driver_uninstall(_channel));
   }
 
-  void ws2812_strip::push_pixels(const infrastructure::array_view<color_rgb>& pixels)
+  void ws2812_strip::push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels)
   {
     check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size() * 3, true));
     check_result(rmt_wait_tx_done(_channel, pdMS_TO_TICKS(280)));
