@@ -15,6 +15,7 @@ idf_component_register(SRCS
                         "networking/wifi.cpp"
 
                         "peripherals/integrated_led.cpp"
+                        "peripherals/ws2812_strip.cpp"
 
                         "storage/embedded.cpp"
                         "storage/nvs.cpp"

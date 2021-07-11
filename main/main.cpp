@@ -10,6 +10,8 @@
 #include "networking/wifi.hpp"
 #include "networking/ntp_client.hpp"
 
+#include "peripherals/ws2812_strip.hpp" //
+
 #include "app/angular_pages.hpp"
 #include "app/integrated_led_blinker.hpp"
 
@@ -19,6 +21,8 @@ using namespace std::this_thread;
 using namespace mesh::app;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
+
+using namespace mesh::peripherals; //
 
 extern "C" void app_main()
 {
@@ -37,6 +41,16 @@ extern "C" void app_main()
     
     //UI
     dependencies.resolve<http_server>()->start();
+
+    auto leds = dependencies.resolve<ws2812_strip>();
+    vector<color_rgb> colors = {
+      {10, 0, 0},
+      {0, 10, 0},
+      {0, 0, 10},
+      {10, 10, 10}
+    };
+
+    leds->push_pixels(colors);
   }
   catch (const exception &e)
   {

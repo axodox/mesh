@@ -36,7 +36,7 @@ namespace mesh::networking
     wifi_config_t sta_config{};
     strcpy(reinterpret_cast<char*>(sta_config.sta.ssid), ssid);
     strcpy(reinterpret_cast<char*>(sta_config.sta.password), password);
-    check_result(esp_wifi_set_config(ESP_IF_WIFI_STA, &sta_config));
+    check_result(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
 
     check_result(esp_wifi_start());
   }

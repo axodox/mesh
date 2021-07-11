@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace mesh::infrastructure
 {
@@ -15,6 +16,16 @@ namespace mesh::infrastructure
     array_view() :
       _start(nullptr),
       _end(nullptr)
+    { }
+
+    array_view(std::vector<item_t>& items) :
+      _start(items.data()),
+      _end(items.data() + items.size())
+    { }
+
+    array_view(const std::vector<item_t>& items) :
+      _start(const_cast<item_t*>(items.data())),
+      _end(const_cast<item_t*>(items.data() + items.size()))
     { }
 
     constexpr array_view(item_t* start, item_t* end) :
@@ -43,6 +54,16 @@ namespace mesh::infrastructure
     }
 
     const item_t* end() const
+    {
+      return _start;
+    }
+
+    item_t* data()
+    {
+      return _start;
+    }
+
+    const item_t* data() const
     {
       return _start;
     }
