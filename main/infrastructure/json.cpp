@@ -1,4 +1,4 @@
-#include "json.h"
+#include "json.hpp"
 #include <sstream>
 #include <optional>
 //#include <charconv>
@@ -313,10 +313,20 @@ namespace mesh::json
 
   std::unique_ptr<json_value>& json_object::operator[](const std::string& property)
   {
-    return value[property];
+    return at(property);
   }
 
   const std::unique_ptr<json_value>& json_object::operator[](const std::string& property) const
+  {
+    return at(property);
+  }
+
+  std::unique_ptr<json_value>& json_object::at(const std::string& property)
+  {
+    return value[property];
+  }
+
+  const std::unique_ptr<json_value>& json_object::at(const std::string& property) const
   {
     auto it = value.find(property);
     if (it != value.end())

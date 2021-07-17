@@ -129,6 +129,9 @@ namespace mesh::json
     std::unique_ptr<json_value>& operator[](const std::string& property);
     const std::unique_ptr<json_value>& operator[](const std::string& property) const;
 
+    std::unique_ptr<json_value>& at(const std::string& property);
+    const std::unique_ptr<json_value>& at(const std::string& property) const;
+
     template<typename value_t>
     void set_value(const std::string& key, const value_t& value)
     {
@@ -394,6 +397,8 @@ namespace mesh::json
         return true;
       }
       break;
+    default:
+      return false;
     }
 
     return false;

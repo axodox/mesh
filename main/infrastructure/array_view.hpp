@@ -45,7 +45,7 @@ namespace mesh::infrastructure
 
     item_t* end()
     {
-      return _start;
+      return _end;
     }
 
     const item_t* begin() const
@@ -55,7 +55,7 @@ namespace mesh::infrastructure
 
     const item_t* end() const
     {
-      return _start;
+      return _end;
     }
 
     item_t* data()

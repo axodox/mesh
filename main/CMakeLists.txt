@@ -27,6 +27,9 @@ idf_component_register(SRCS
 
                         "app/angular_pages.cpp"
                         "app/integrated_led_blinker.cpp"
+                        "app/light_strip/helpers/serialization.cpp"
+                        "app/light_strip/sources/static_source.cpp"
+                        "app/light_strip/light_strip_controller.cpp"
                         "main.cpp"
                         INCLUDE_DIRS "."
                        EMBED_FILES 
