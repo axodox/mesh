@@ -29,6 +29,7 @@ idf_component_register(SRCS
                         "app/integrated_led_blinker.cpp"
                         "app/light_strip/helpers/serialization.cpp"
                         "app/light_strip/sources/static_source.cpp"
+                        "app/light_strip/sources/rainbow_source.cpp"
                         "app/light_strip/light_strip_controller.cpp"
                         "main.cpp"
                         INCLUDE_DIRS "."

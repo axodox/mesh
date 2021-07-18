@@ -1,6 +1,7 @@
 #include "light_strip_controller.hpp"
 #include "infrastructure/dependencies.hpp"
 #include "app/light_strip/sources/static_source.hpp"
+#include "app/light_strip/sources/rainbow_source.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -11,11 +12,13 @@ using namespace mesh::app::light_strip::sources;
 
 namespace mesh::app::light_strip
 {
+  const std::chrono::milliseconds light_strip_controller::interval = milliseconds(16);
+
   light_strip_controller::light_strip_controller() :
-    _interval(milliseconds(160)),
     _light_count(4),
     _strip(dependencies.resolve<peripherals::led_strip>()),
-    _source(make_unique<static_source>()),
+    //_source(make_unique<static_source>()),
+    _source(make_unique<rainbow_source>()),
     _thread([&]{ worker(); })
   { }
 
@@ -44,7 +47,7 @@ namespace mesh::app::light_strip
       _source->fill(lights_view);
       _strip->push_pixels(lights_view);
 
-      this_thread::sleep_until(now + _interval);
+      this_thread::sleep_until(now + interval);
     }
   }
 }

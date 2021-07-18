@@ -20,10 +20,11 @@ namespace mesh::peripherals
     check_result(rmt_get_counter_clock(_channel, &clock_frequency_hz));
 
     float clock_frequency_ghz = float(clock_frequency_hz) / 1e9;
-    _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 350);
-    _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 1000);
-    _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 1000);
-    _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 350);
+    _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 400); //.4us
+    _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 850); //.85us
+    _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 800); //.8us
+    _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 450); //.45us
+    _signal_reset_low_ticks = uint32_t(clock_frequency_ghz * 50000); //50us
 
     check_result(rmt_translator_init(_channel, &ws2812_strip::convert_data));
     check_result(rmt_translator_set_context(_channel, this));
@@ -36,8 +37,10 @@ namespace mesh::peripherals
 
   void ws2812_strip::push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels)
   {
+    const rmt_item32_t reset = {{{ 0, 1, _signal_reset_low_ticks, 0 }}};
+    rmt_write_items(_channel, &reset, 1, true);
+
     check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size() * 3, true));
-    check_result(rmt_wait_tx_done(_channel, pdMS_TO_TICKS(280)));
   }
 
   void ws2812_strip::convert_data(
