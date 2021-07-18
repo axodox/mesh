@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+#include <string>
+
 #include "esp_http_server.h"
 
 #include "infrastructure/array_view.hpp"
@@ -25,9 +28,13 @@ namespace mesh::networking
 
     void return_not_found();
 
+    const infrastructure::array_view<uint8_t> get_body();
+    const std::string_view get_text();
+
   private:
     httpd_req_t* _request = nullptr;
     bool _has_response = false;
+    std::vector<uint8_t> _body;
 
     void check_has_response(bool set_response = true);
   };

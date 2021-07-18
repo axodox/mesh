@@ -1,5 +1,7 @@
 #include "light_strip_controller.hpp"
 #include "infrastructure/dependencies.hpp"
+#include "infrastructure/error.hpp"
+#include "networking/http_server.hpp"
 #include "app/light_strip/sources/static_source.hpp"
 #include "app/light_strip/sources/rainbow_source.hpp"
 
@@ -8,6 +10,8 @@ using namespace std::chrono;
 using namespace mesh::graphics;
 using namespace mesh::peripherals;
 using namespace mesh::infrastructure;
+using namespace mesh::networking;
+using namespace mesh::json;
 using namespace mesh::app::light_strip::sources;
 
 namespace mesh::app::light_strip
@@ -19,15 +23,20 @@ namespace mesh::app::light_strip
     _strip(dependencies.resolve<peripherals::led_strip>()),
     //_source(make_unique<static_source>()),
     _source(make_unique<rainbow_source>()),
-    _thread([&]{ worker(); })
-  { }
+    _thread([&] { worker(); }, configMAX_PRIORITIES )
+  {
+    auto server = dependencies.resolve<http_server>();
+    server->add_handler(http_query_method::post, "/api/light_strip/mode", [&](http_query &query) {
+      on_post(query); 
+    });
+  }
 
   light_strip_controller::~light_strip_controller()
   {
     if(_isDisposed) return;
 
     _isDisposed = true;
-    if(_thread.joinable()) _thread.join();
+    _thread.close();
   }
 
   void light_strip_controller::worker()
@@ -44,10 +53,39 @@ namespace mesh::app::light_strip
         lights_view = lights;
       }
 
-      _source->fill(lights_view);
+      {
+        lock_guard<mutex> lock(_mutex);
+        _source->fill(lights_view);
+      }
       _strip->push_pixels(lights_view);
 
       this_thread::sleep_until(now + interval);
     }
+  }
+
+  void light_strip_controller::on_post(networking::http_query &query)
+  {
+    auto body = query.get_text();
+    auto settings = light_source_settings::from_string(body);
+    if(!settings) return;
+
+    printf("%s\n", settings->type_name().c_str());
+    if(settings->source_type() != _source->source_type())
+    {
+      lock_guard<mutex> lock(_mutex);
+      switch(settings->source_type())
+      {
+        case light_source_type::static_source:
+          printf("static\n");
+          _source = make_unique<static_source>();
+        break;
+        case light_source_type::rainbow_source:
+          printf("rainbow\n");
+          _source = make_unique<rainbow_source>();
+        break;
+      }
+    }
+
+    _source->apply_settings(settings.get());
   }
 }

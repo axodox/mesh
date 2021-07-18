@@ -30,6 +30,7 @@ namespace mesh::networking
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.max_uri_handlers = uint16_t(_handlers.size()) + !_files.empty();
     config.lru_purge_enable = true;
+    config.core_id = 1;
     check_result(httpd_start(&_server, &config));
 
     //Custom handlers

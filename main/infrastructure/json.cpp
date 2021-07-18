@@ -26,6 +26,12 @@ namespace mesh::json
     }
   }
 
+  std::unique_ptr<json_value> json_value::from_string(const char* text)
+  {
+    string_view view{text};
+    return from_string(view);
+  }
+
 
   std::unique_ptr<json_value> json_value::from_string(std::string_view& text)
   {
@@ -51,7 +57,7 @@ namespace mesh::json
     }
   }
 
-  inline std::unique_ptr<json_value> json_value::from_string(const std::string& text)
+  std::unique_ptr<json_value> json_value::from_string(const std::string& text)
   {
     std::string_view view = text;
     return from_string(view);

@@ -7,6 +7,7 @@ namespace mesh::app::light_strip::sources
   {
     graphics::color_rgb color;
 
+    virtual light_source_type source_type() const override;
     virtual std::string type_name() const;
 
     virtual std::unique_ptr<json_value> to_json() const override;
@@ -17,6 +18,8 @@ namespace mesh::app::light_strip::sources
   {
   public:
     graphics::color_rgb color{ 10, 10, 10 };
+
+    virtual light_source_type source_type() const override;
 
     virtual void apply_settings(const light_source_settings* settings) override;
     virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;

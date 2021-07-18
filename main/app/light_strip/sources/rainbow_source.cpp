@@ -12,6 +12,11 @@ using namespace mesh::app::light_strip::helpers;
 
 namespace mesh::app::light_strip::sources
 {
+  light_source_type rainbow_source_settings::source_type() const
+  {
+    return light_source_type::rainbow_source;
+  }
+
   std::string rainbow_source_settings::type_name() const
   {
     return "rainbow";
@@ -33,6 +38,11 @@ namespace mesh::app::light_strip::sources
     auto object = static_cast<const json_object*>(value);
     object->get_value("spatialFrequency", spatial_frequency);
     object->get_value("spatialVelocity", angular_velocity);
+  }
+
+  light_source_type rainbow_source::source_type() const
+  {
+    return light_source_type::rainbow_source;
   }
 
   void rainbow_source::apply_settings(const light_source_settings* settings)

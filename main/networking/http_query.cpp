@@ -49,13 +49,31 @@ namespace mesh::networking
   {
     check_has_response();
     check_result(httpd_resp_set_type(_request, mime_type));
-    check_result(httpd_resp_send(_request, reinterpret_cast<const char*>(data.begin()), ssize_t(data.size())));
+    check_result(httpd_resp_send(_request, reinterpret_cast<const char*>(data.data()), ssize_t(data.size())));
   }
 
   void http_query::return_not_found()
   {
     check_has_response();
     check_result(httpd_resp_send_404(_request));
+  }
+
+  const infrastructure::array_view<uint8_t> http_query::get_body()
+  {
+    if(_body.empty() && _request->content_len > 0)
+    {
+      _body.resize(_request->content_len + 1);
+      auto length = httpd_req_recv(_request, reinterpret_cast<char*>(_body.data()), _body.size());
+      _body.resize(length + 1);
+      _body.back() = 0; //Add zero termination for strings
+    }
+
+    return { _body.data(), _body.data() + _request->content_len };
+  }
+
+  const std::string_view http_query::get_text()
+  {
+    return { reinterpret_cast<const char*>(get_body().data()) };
   }
 
   void http_query::check_has_response(bool set_response)

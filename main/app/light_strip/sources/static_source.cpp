@@ -7,6 +7,11 @@ using namespace mesh::app::light_strip::helpers;
 
 namespace mesh::app::light_strip::sources
 {
+  light_source_type static_source_settings::source_type() const
+  {
+    return light_source_type::static_source;
+  }
+
   std::string static_source_settings::type_name() const
   {
     return "static";
@@ -26,6 +31,11 @@ namespace mesh::app::light_strip::sources
 
     auto object = static_cast<const json_object*>(value);
     color = color_rgb::from_json(object->at("color").get());
+  }
+
+  light_source_type static_source::source_type() const
+  {
+    return light_source_type::static_source;
   }
 
   void static_source::apply_settings(const light_source_settings* settings)

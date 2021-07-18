@@ -35,6 +35,8 @@ namespace mesh::json
     virtual json_type type() const = 0;
     virtual std::string to_string() const = 0;
 
+    static std::unique_ptr<json_value> from_string(const char* text);
+
     static std::unique_ptr<json_value> from_string(std::string_view& text);
 
     static std::unique_ptr<json_value> from_string(const std::string& text);

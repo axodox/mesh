@@ -2,8 +2,11 @@
 #include <chrono>
 #include <memory>
 #include <thread>
+#include <mutex>
 #include "app/light_strip/sources/light_source.hpp"
 #include "peripherals/led_strip.hpp"
+#include "networking/http_query.hpp"
+#include "infrastructure/task.hpp"
 
 namespace mesh::app::light_strip
 {
@@ -20,8 +23,10 @@ namespace mesh::app::light_strip
     uint32_t _light_count;
     std::shared_ptr<peripherals::led_strip> _strip;
     std::unique_ptr<sources::light_source> _source;
-    std::thread _thread;
+    std::mutex _mutex;
+    infrastructure::task _thread;
 
     void worker();
+    void on_post(networking::http_query &query);
   };
 }

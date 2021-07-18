@@ -10,6 +10,7 @@ namespace mesh::app::light_strip::sources
     uint8_t spatial_frequency;
     float angular_velocity;
 
+    virtual light_source_type source_type() const override;
     virtual std::string type_name() const;
 
     virtual std::unique_ptr<json_value> to_json() const override;
@@ -21,6 +22,8 @@ namespace mesh::app::light_strip::sources
   public:
     uint8_t spatial_frequency = 1;
     float angular_velocity = float(M_PI);
+
+    virtual light_source_type source_type() const override;
 
     virtual void apply_settings(const light_source_settings* settings) override;
     virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;
