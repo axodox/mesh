@@ -35,5 +35,5 @@ namespace mesh::graphics
     operator color_rgb() const;
   };
 
-  constexpr std::array<float, 256> make_gamma(float gamma, float max = 1.f, float min = 0.2f);
+  std::array<float, 256> make_gamma(float gamma, float max = 1.f, float min = 0.2f);
 }

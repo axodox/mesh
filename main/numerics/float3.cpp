@@ -1,4 +1,5 @@
 #include "float3.hpp"
+#include <cmath>
 
 namespace mesh::numerics
 {
@@ -60,5 +61,14 @@ namespace mesh::numerics
   {
     *this = *this - other;
     return *this;
+  }
+
+  float3 float3::round() const
+  {
+    return {
+      roundf(x),
+      roundf(y),
+      roundf(z)
+    };
   }
 }

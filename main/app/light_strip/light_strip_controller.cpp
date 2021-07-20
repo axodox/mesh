@@ -13,6 +13,7 @@ using namespace mesh::infrastructure;
 using namespace mesh::networking;
 using namespace mesh::json;
 using namespace mesh::app::light_strip::sources;
+using namespace mesh::app::light_strip::processors;
 
 namespace mesh::app::light_strip
 {
@@ -23,6 +24,7 @@ namespace mesh::app::light_strip
     _strip(dependencies.resolve<peripherals::led_strip>()),
     //_source(make_unique<static_source>()),
     _source(make_unique<rainbow_source>()),
+    _color_corrector(make_unique<color_corrector>()),
     _thread([&] { worker(); }, configMAX_PRIORITIES )
   {
     _logger.log_message(log_severity::info, "Starting...");
@@ -61,6 +63,8 @@ namespace mesh::app::light_strip
         lock_guard<mutex> lock(_mutex);
         _source->fill(lights_view);
       }
+
+      _color_corrector->process(lights_view);
       _strip->push_pixels(lights_view);
 
       this_thread::sleep_until(now + interval);

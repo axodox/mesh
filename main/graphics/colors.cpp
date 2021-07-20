@@ -106,7 +106,7 @@ namespace mesh::graphics
     };
   }
 
-  constexpr std::array<float, 256> make_gamma(float gamma, float max, float min)
+  std::array<float, 256> make_gamma(float gamma, float max, float min)
   {
     std::array<float, 256> values{};
     for (auto i = 0u; i < 256; i++)

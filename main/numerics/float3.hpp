@@ -30,5 +30,7 @@ namespace mesh::numerics
 
     float3 operator-(const float3& other);
     float3& operator-=(const float3& other);
+
+    float3 round() const;
   };
 }

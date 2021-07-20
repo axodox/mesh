@@ -30,9 +30,11 @@ idf_component_register(SRCS
                         "app/light_strip/helpers/serialization.cpp"
                         "app/light_strip/sources/static_source.cpp"
                         "app/light_strip/sources/rainbow_source.cpp"
+                        "app/light_strip/processors/color_corrector.cpp"
                         "app/light_strip/light_strip_controller.cpp"
+
                         "main.cpp"
-                        INCLUDE_DIRS "."
+                       INCLUDE_DIRS "."
                        EMBED_FILES 
                         "www/favicon.png.gz"
                         "www/index.html.gz"
