@@ -25,18 +25,22 @@ namespace mesh::app::light_strip
     _source(make_unique<rainbow_source>()),
     _thread([&] { worker(); }, configMAX_PRIORITIES )
   {
+    _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
     server->add_handler(http_query_method::post, "/api/light_strip/mode", [&](http_query &query) {
       on_post(query); 
     });
+    _logger.log_message(log_severity::info, "Started.");
   }
 
   light_strip_controller::~light_strip_controller()
   {
     if(_isDisposed) return;
 
+    _logger.log_message(log_severity::info, "Stopping...");
     _isDisposed = true;
     _thread.close();
+    _logger.log_message(log_severity::info, "Stopped.");
   }
 
   void light_strip_controller::worker()
@@ -69,23 +73,22 @@ namespace mesh::app::light_strip
     auto settings = light_source_settings::from_string(body);
     if(!settings) return;
 
-    printf("%s\n", settings->type_name().c_str());
     if(settings->source_type() != _source->source_type())
     {
       lock_guard<mutex> lock(_mutex);
       switch(settings->source_type())
       {
         case light_source_type::static_source:
-          printf("static\n");
           _source = make_unique<static_source>();
         break;
         case light_source_type::rainbow_source:
-          printf("rainbow\n");
           _source = make_unique<rainbow_source>();
         break;
       }
+      _logger.log_message(log_severity::info, "Switched lighting mode to %s.", settings->type_name().c_str());
     }
 
     _source->apply_settings(settings.get());
+    _logger.log_message(log_severity::info, "Applied settings.");
   }
 }

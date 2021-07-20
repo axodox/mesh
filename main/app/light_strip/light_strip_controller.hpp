@@ -7,11 +7,14 @@
 #include "peripherals/led_strip.hpp"
 #include "networking/http_query.hpp"
 #include "infrastructure/task.hpp"
+#include "infrastructure/logger.hpp"
 
 namespace mesh::app::light_strip
 {
   class light_strip_controller
   {
+    static constexpr infrastructure::logger _logger{"light_strip_controller"};
+    
   public:
     static const std::chrono::milliseconds interval;
 

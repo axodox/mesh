@@ -213,11 +213,9 @@ namespace mesh::json
     template<typename first_t, typename... other_t>
     static void build_constructor_map(std::map<std::string, std::function<std::unique_ptr<base_t>()>>& constructors)
     {
-      if constexpr (sizeof...(other_t) == 0)
-      {
-        constructors[std::make_unique<first_t>()->type_name()] = []() -> std::unique_ptr<base_t> { return std::make_unique<first_t>(); };
-      }
-      else
+      constructors[std::make_unique<first_t>()->type_name()] = []() -> std::unique_ptr<base_t> { return std::make_unique<first_t>(); };
+      
+      if constexpr (sizeof...(other_t) > 0)
       {
         build_constructor_map<other_t...>(constructors);
       }
