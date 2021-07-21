@@ -1,4 +1,4 @@
-#include "color_corrector.hpp"
+#include "brightness_processor.hpp"
 #include "app\light_strip\helpers\serialization.hpp"
 #include <cmath>
 
@@ -9,7 +9,7 @@ using namespace mesh::graphics;
 
 namespace mesh::app::light_strip::processors
 {
-  std::unique_ptr<json_value> color_corrector_settings::to_json() const
+  std::unique_ptr<json_value> brightness_processor_settings::to_json() const
   {
     using namespace mesh::app::light_strip::helpers;
     auto object = make_unique<json_object>();
@@ -19,26 +19,25 @@ namespace mesh::app::light_strip::processors
     return object;
   }
 
-  void color_corrector_settings::from_json(const json_value* value)
+  void brightness_processor_settings::from_json(const json_value* value)
   {
     using namespace mesh::app::light_strip::helpers;
     if (value->type() != json_type::object) return;
 
     auto object = static_cast<const json_object*>(value);
-    gamma = float3::from_json(object->at("gamma").get());
+    float3::from_json(object->at("gamma").get(), gamma);
     object->get_value("brightness", brightness);
     object->get_value("max_brightness", max_brightness);
   }
 
-  color_corrector::color_corrector() :
-    _brightness(1.f),
-    _max_brightness(0.7f),
-    _gamma(1.6f, 1.5f, 1.6f)
+  brightness_processor::brightness_processor()
   {
+    brightness_processor_settings default_settings{};
+    apply_settings(&default_settings);
     rebuild_gamma();
   }
 
-  void color_corrector::apply_settings(const color_corrector_settings* settings)
+  void brightness_processor::apply_settings(const brightness_processor_settings* settings)
   {
     _brightness = settings->brightness;
     _max_brightness = settings->max_brightness;
@@ -46,7 +45,7 @@ namespace mesh::app::light_strip::processors
     rebuild_gamma();
   }
 
-  void color_corrector::process(infrastructure::array_view<graphics::color_rgb>& pixels)
+  void brightness_processor::process(infrastructure::array_view<graphics::color_rgb>& pixels)
   {
     //Prepare buffer
     if(_buffer.size() != pixels.size())
@@ -92,7 +91,7 @@ namespace mesh::app::light_strip::processors
     }
   }
 
-  void color_corrector::rebuild_gamma()
+  void brightness_processor::rebuild_gamma()
   {
     _gamma_mapping_r = make_gamma(_gamma.x, _brightness);
     _gamma_mapping_g = make_gamma(_gamma.y, _brightness);

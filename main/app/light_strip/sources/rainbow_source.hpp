@@ -7,8 +7,8 @@ namespace mesh::app::light_strip::sources
 {
   struct rainbow_source_settings : public light_source_settings
   {
-    uint8_t spatial_frequency;
-    float angular_velocity;
+    uint8_t spatial_frequency = 1;
+    float angular_velocity = float(M_PI);
 
     virtual light_source_type source_type() const override;
     virtual std::string type_name() const;
@@ -20,8 +20,10 @@ namespace mesh::app::light_strip::sources
   class rainbow_source : public light_source
   {
   public:
-    uint8_t spatial_frequency = 1;
-    float angular_velocity = float(M_PI);
+    uint8_t spatial_frequency;
+    float angular_velocity;
+
+    rainbow_source();
 
     virtual light_source_type source_type() const override;
 

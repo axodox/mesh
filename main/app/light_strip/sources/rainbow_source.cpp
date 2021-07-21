@@ -40,6 +40,12 @@ namespace mesh::app::light_strip::sources
     object->get_value("spatialVelocity", angular_velocity);
   }
 
+  rainbow_source::rainbow_source()
+  {
+    rainbow_source_settings default_settings{};
+    apply_settings(&default_settings);
+  }
+
   light_source_type rainbow_source::source_type() const
   {
     return light_source_type::rainbow_source;

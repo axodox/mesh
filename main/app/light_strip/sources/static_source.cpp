@@ -30,7 +30,13 @@ namespace mesh::app::light_strip::sources
     if (value->type() != json_type::object) return;
 
     auto object = static_cast<const json_object*>(value);
-    color = color_rgb::from_json(object->at("color").get());
+    color_rgb::from_json(object->at("color").get(), color);
+  }
+
+  static_source::static_source()
+  {
+    static_source_settings default_settings{};
+    apply_settings(&default_settings);
   }
 
   light_source_type static_source::source_type() const

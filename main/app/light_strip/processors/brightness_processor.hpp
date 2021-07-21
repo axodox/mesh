@@ -7,22 +7,22 @@
 
 namespace mesh::app::light_strip::processors
 {
-  struct color_corrector_settings : json::json_serializable<color_corrector_settings>
+  struct brightness_processor_settings : json::json_serializable<brightness_processor_settings>
   {
-    numerics::float3 gamma;
-    float brightness;
-    float max_brightness;
+    numerics::float3 gamma{1.6f, 1.5f, 1.6f};
+    float brightness = 1.f;
+    float max_brightness = 0.7f;
 
     virtual std::unique_ptr<json_value> to_json() const override;
     virtual void from_json(const json_value* value) override;
   };
 
-  class color_corrector : public color_processor
+  class brightness_processor : public color_processor
   {
   public:
-    color_corrector();
+    brightness_processor();
 
-    void apply_settings(const color_corrector_settings* settings);
+    void apply_settings(const brightness_processor_settings* settings);
     virtual void process(infrastructure::array_view<graphics::color_rgb>& pixels) override;
 
   private:

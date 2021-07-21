@@ -24,12 +24,12 @@ namespace mesh::app::light_strip
     _strip(dependencies.resolve<peripherals::led_strip>()),
     //_source(make_unique<static_source>()),
     _source(make_unique<rainbow_source>()),
-    _color_corrector(make_unique<color_corrector>()),
+    _brightness_processor(make_unique<brightness_processor>()),
     _thread([&] { worker(); }, configMAX_PRIORITIES )
   {
     _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
-    server->add_handler(http_query_method::post, "/api/light_strip/mode", [&](http_query &query) {
+    server->add_handler(http_query_method::post, "/api/light_strip/*", [&](http_query &query) {
       on_post(query); 
     });
     _logger.log_message(log_severity::info, "Started.");
@@ -64,7 +64,7 @@ namespace mesh::app::light_strip
         _source->fill(lights_view);
       }
 
-      _color_corrector->process(lights_view);
+      _brightness_processor->process(lights_view);
       _strip->push_pixels(lights_view);
 
       this_thread::sleep_until(now + interval);
@@ -73,9 +73,39 @@ namespace mesh::app::light_strip
 
   void light_strip_controller::on_post(networking::http_query &query)
   {
+    if(strcmp(query.uri(), "/api/light_strip/mode") == 0)
+    {
+      on_post_mode(query);
+    }
+    else if(strcmp(query.uri(), "/api/light_strip/brightness") == 0)
+    {
+      on_post_brightness(query);
+    }
+  }
+
+  void light_strip_controller::on_post_brightness(networking::http_query &query)
+  {
+    auto body = query.get_text();
+    auto settings = brightness_processor_settings::from_string(body);
+    if(!settings)
+    {
+      _logger.log_message(log_severity::warning, "Failed to parse lighting brightness settings.");
+      return;
+    }
+
+    _brightness_processor->apply_settings(settings.get());
+    _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
+  }
+
+  void light_strip_controller::on_post_mode(networking::http_query &query)
+  {
     auto body = query.get_text();
     auto settings = light_source_settings::from_string(body);
-    if(!settings) return;
+    if(!settings)
+    {
+      _logger.log_message(log_severity::warning, "Failed to parse lighting mode settings.");
+      return;
+    }
 
     if(settings->source_type() != _source->source_type())
     {
@@ -93,6 +123,6 @@ namespace mesh::app::light_strip
     }
 
     _source->apply_settings(settings.get());
-    _logger.log_message(log_severity::info, "Applied settings.");
+    _logger.log_message(log_severity::info, "Applied lighting mode settings.");
   }
 }
