@@ -60,9 +60,9 @@ namespace mesh::app::light_strip::processors
     {
       if (saturation != 1.f)
       {
-        //color_hsl hsl_color = color;
-        //hsl_color.s = saturation < 10 ? pow(hsl_color.s, saturation) : 0.f;
-        //color = hsl_color;
+        color_hsl hsl = color;
+        hsl.s = saturation < 10 ? pow(hsl.s, saturation) : 0.f;
+        color = hsl;
       }
 
       sum += float3{

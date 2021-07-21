@@ -18,7 +18,7 @@ namespace mesh::graphics
 
     auto diff = max - min;
     result.l = (max + min) / 2.f;
-    if (abs(diff) < 0.00001f)
+    if (std::abs(diff) < 0.00001f)
     {
       result.s = 0.f;
       result.h = 0.f;
