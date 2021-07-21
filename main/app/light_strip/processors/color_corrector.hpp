@@ -3,13 +3,13 @@
 #include "numerics/float3.hpp"
 #include "infrastructure/json.hpp"
 #include <array>
+#include <vector>
 
 namespace mesh::app::light_strip::processors
 {
   struct color_corrector_settings : json::json_serializable<color_corrector_settings>
   {
     numerics::float3 gamma;
-    float saturation;
     float brightness;
     float max_brightness;
 
@@ -26,10 +26,10 @@ namespace mesh::app::light_strip::processors
     virtual void process(infrastructure::array_view<graphics::color_rgb>& pixels) override;
 
   private:
-    float _brightness = 1.f;
-    float _saturation = 1.f;
-    float _max_brightness = 0.7f;
+    float _brightness;
+    float _max_brightness;
     numerics::float3 _gamma;
+    std::vector<numerics::float3> _buffer;
 
     std::array<float, 256> _gamma_mapping_r;
     std::array<float, 256> _gamma_mapping_g;
