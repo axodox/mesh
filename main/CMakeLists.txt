@@ -24,6 +24,7 @@ idf_component_register(SRCS
 
                         "storage/embedded.cpp"
                         "storage/nvs.cpp"
+                        "storage/spiffs.cpp"
 
                         "app/angular_pages.cpp"
                         "app/integrated_led_blinker.cpp"

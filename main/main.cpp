@@ -14,6 +14,8 @@
 #include "peripherals/led_strip.hpp"
 #include "peripherals/ws2812_strip.hpp"
 
+#include "storage/spiffs.hpp"
+
 #include "app/angular_pages.hpp"
 #include "app/integrated_led_blinker.hpp"
 #include "app/light_strip/light_strip_controller.hpp"
@@ -26,6 +28,7 @@ using namespace mesh::app::light_strip;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
 using namespace mesh::peripherals;
+using namespace mesh::storage;
 
 extern "C" void app_main()
 {
@@ -36,8 +39,9 @@ extern "C" void app_main()
   try
   {
     //Services
+    dependencies.resolve<spiffs>();
     dependencies.resolve<wifi_connection>();
-    dependencies.resolve<ntp_client>();
+    dependencies.resolve<ntp_client>();    
     
     //App
     dependencies.resolve<angular_pages>();
