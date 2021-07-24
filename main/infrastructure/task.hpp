@@ -6,6 +6,20 @@
 
 namespace mesh::infrastructure
 {
+  enum class task_affinity : uint8_t
+  {
+    none,
+    core_0,
+    core_1
+  };
+
+  enum class task_priority : uint32_t
+  {
+    minimum = 0,
+    normal = CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
+    maximum = configMAX_PRIORITIES
+  };
+
   class task
   {
   private:
@@ -19,11 +33,17 @@ namespace mesh::infrastructure
     }
 
   public:
-    task(std::function<void()>&& action, uint32_t priority = CONFIG_PTHREAD_TASK_PRIO_DEFAULT, const char* name = CONFIG_PTHREAD_TASK_NAME_DEFAULT)
+    task(std::function<void()>&& action, task_affinity affinity = task_affinity::none, task_priority priority = task_priority::normal, const char* name = "mesh_task")
     {
       _action = std::make_unique<std::function<void()>>(std::move(action));
-      //xTaskCreate(&task::worker, name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, _action.get(), priority, &_task_handle);
-      xTaskCreatePinnedToCore(&task::worker, name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, _action.get(), priority, &_task_handle, 0);
+      if(affinity == task_affinity::none)
+      {
+        xTaskCreate(&task::worker, name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, _action.get(), uint32_t(priority), &_task_handle);
+      }
+      else
+      {
+        xTaskCreatePinnedToCore(&task::worker, name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, _action.get(), uint32_t(priority), &_task_handle, int(affinity) - 1);
+      }
     }
 
     ~task()

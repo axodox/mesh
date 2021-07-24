@@ -25,7 +25,7 @@ namespace mesh::app::light_strip
     //_source(make_unique<static_source>()),
     _source(make_unique<rainbow_source>()),
     _brightness_processor(make_unique<brightness_processor>()),
-    _thread([&] { worker(); }, configMAX_PRIORITIES )
+    _thread([&] { worker(); }, task_affinity::core_0, task_priority::maximum)
   {
     _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
