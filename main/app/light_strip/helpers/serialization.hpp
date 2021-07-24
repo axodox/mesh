@@ -5,15 +5,9 @@
 
 namespace mesh::app::light_strip::helpers
 {
-  namespace color_rgb
-  {
-    std::unique_ptr<json::json_value> to_json(const graphics::color_rgb& value);
-    void from_json(const json::json_value* json, graphics::color_rgb& value);
-  }
+  std::unique_ptr<json::json_value> color_rgb_to_json(const graphics::color_rgb& value);
+  void color_rgb_from_json(const json::json_value* json, graphics::color_rgb& value);
 
-  namespace float3
-  {
-    std::unique_ptr<json::json_value> to_json(const numerics::float3& value);
-    void from_json(const json::json_value* json, numerics::float3& value);
-  }
+  std::unique_ptr<json::json_value> float3_to_json(const numerics::float3& value);
+  void float3_from_json(const json::json_value* json, numerics::float3& value);
 }

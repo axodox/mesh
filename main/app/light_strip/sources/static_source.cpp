@@ -12,7 +12,7 @@ namespace mesh::app::light_strip::sources
     return light_source_type::static_source;
   }
 
-  std::string static_source_settings::type_name() const
+  const char* static_source_settings::type_name() const
   {
     return "static";
   }
@@ -21,7 +21,7 @@ namespace mesh::app::light_strip::sources
   {
     auto object = make_unique<json_object>();
     add_type_info(object.get());
-    object->set_value("color", color_rgb::to_json(color));
+    object->set_value("color", color_rgb_to_json(color));
     return object;
   }
 
@@ -30,7 +30,7 @@ namespace mesh::app::light_strip::sources
     if (value->type() != json_type::object) return;
 
     auto object = static_cast<const json_object*>(value);
-    color_rgb::from_json(object->at("color").get(), color);
+    color_rgb_from_json(object->at("color").get(), color);
   }
 
   static_source::static_source()

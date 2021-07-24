@@ -119,7 +119,7 @@ namespace mesh::app::light_strip
           _source = make_unique<rainbow_source>();
         break;
       }
-      _logger.log_message(log_severity::info, "Switched lighting mode to %s.", settings->type_name().c_str());
+      _logger.log_message(log_severity::info, "Switched lighting mode to %s.", settings->type_name());
     }
 
     _source->apply_settings(settings.get());

@@ -17,7 +17,7 @@ namespace mesh::app::light_strip::sources
     return light_source_type::rainbow_source;
   }
 
-  std::string rainbow_source_settings::type_name() const
+  const char* rainbow_source_settings::type_name() const
   {
     return "rainbow";
   }

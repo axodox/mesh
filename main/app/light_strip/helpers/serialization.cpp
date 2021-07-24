@@ -6,7 +6,7 @@ using namespace std;
 
 namespace mesh::app::light_strip::helpers
 {
-  std::unique_ptr<json::json_value> color_rgb::to_json(const graphics::color_rgb& value)
+  std::unique_ptr<json::json_value> color_rgb_to_json(const graphics::color_rgb& value)
   {
     auto object = make_unique<json_object>();
     object->set_value("r", value.r);
@@ -15,7 +15,7 @@ namespace mesh::app::light_strip::helpers
     return object;
   }
 
-  void color_rgb::from_json(const json::json_value* json, graphics::color_rgb& value)
+  void color_rgb_from_json(const json::json_value* json, graphics::color_rgb& value)
   {
     if(json && json->type() == json_type::object)
     {
@@ -26,7 +26,7 @@ namespace mesh::app::light_strip::helpers
     }
   }
 
-  std::unique_ptr<json::json_value> float3::to_json(const numerics::float3& value)
+  std::unique_ptr<json::json_value> float3_to_json(const numerics::float3& value)
   {
     auto object = make_unique<json_object>();
     object->set_value("x", value.x);
@@ -35,7 +35,7 @@ namespace mesh::app::light_strip::helpers
     return object;
   }
 
-  void float3::from_json(const json::json_value* json, numerics::float3& value)
+  void float3_from_json(const json::json_value* json, numerics::float3& value)
   {
     if(json && json->type() == json_type::object)
     {

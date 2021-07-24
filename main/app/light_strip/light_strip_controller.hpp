@@ -13,6 +13,17 @@
 
 namespace mesh::app::light_strip
 {
+  struct light_strip_segment
+  {
+    uint16_t led_count;
+    numerics::float3 end_position;
+  };
+
+  struct light_strip_layout
+  {
+    std::vector<light_strip_segment> segments;
+  };
+
   class light_strip_controller
   {
     static constexpr infrastructure::logger _logger{"light_strip_controller"};

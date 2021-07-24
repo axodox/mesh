@@ -240,7 +240,7 @@ namespace mesh::json
     }
 
   public:
-    virtual std::string type_name() const
+    virtual const char* type_name() const
     {
       return "default";
     }

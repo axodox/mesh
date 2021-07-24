@@ -11,7 +11,7 @@ namespace mesh::app::light_strip::sources
     float angular_velocity = float(M_PI);
 
     virtual light_source_type source_type() const override;
-    virtual std::string type_name() const;
+    virtual const char* type_name() const;
 
     virtual std::unique_ptr<json_value> to_json() const override;
     virtual void from_json(const json_value* value) override;
