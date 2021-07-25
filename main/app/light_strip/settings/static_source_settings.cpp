@@ -4,6 +4,14 @@
 using namespace std;
 using namespace mesh::app::light_strip::settings;
 
+namespace mesh::app::light_strip::settings
+{
+  light_source_type static_source_settings::type() const
+  {
+    return light_source_type::static_source;
+  }
+}
+
 namespace mesh::serialization::json
 {
   std::unique_ptr<json_value> json_serializer<static_source_settings>::to_json(const static_source_settings& value)

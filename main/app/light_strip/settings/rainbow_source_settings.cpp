@@ -3,6 +3,14 @@
 using namespace std;
 using namespace mesh::app::light_strip::settings;
 
+namespace mesh::app::light_strip::settings
+{
+  light_source_type rainbow_source_settings::type() const
+  {
+    return light_source_type::rainbow_source;
+  }
+}
+
 namespace mesh::serialization::json
 {
   std::unique_ptr<json_value> json_serializer<rainbow_source_settings>::to_json(const rainbow_source_settings& value)

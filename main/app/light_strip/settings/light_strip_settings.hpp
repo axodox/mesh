@@ -10,11 +10,11 @@ namespace mesh::app::light_strip::settings
 {
   struct light_strip_settings
   {
-    device_settings device;
-    brightness_processor_settings brightness_processor;
+    device_settings device{};
+    brightness_processor_settings brightness_processor{};
 
-    static_source_settings static_source;
-    rainbow_source_settings rainbow_source;
+    static_source_settings static_source{};
+    rainbow_source_settings rainbow_source{};
   };
 }
 

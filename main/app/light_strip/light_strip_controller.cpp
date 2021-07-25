@@ -4,8 +4,6 @@
 #include "serialization/json.hpp"
 #include "networking/http_server.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
-#include "app/light_strip/processors/json_serialization.hpp"
-#include "app/light_strip/sources/json_serialization.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -16,22 +14,21 @@ using namespace mesh::networking;
 using namespace mesh::serialization::json;
 using namespace mesh::app::light_strip::sources;
 using namespace mesh::app::light_strip::processors;
+using namespace mesh::app::light_strip::settings;
 
 namespace mesh::app::light_strip
 {
   light_strip_controller::light_strip_controller() :
     _strip(dependencies.resolve<peripherals::led_strip>()),
     //_source(make_unique<static_source>()),
-    _source(make_unique<rainbow_source>()),
-    _brightness_processor(make_unique<brightness_processor>()),
+    _source(make_unique<rainbow_source>(&_settings)),
+    _brightness_processor(make_unique<brightness_processor>(&_settings)),
     _thread([&] { worker(); }, task_affinity::core_0, task_priority::maximum)
   {
     _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
     server->add_handler(http_query_method::get, _root_uri, [&](http_query &query) { on_get(query); });
     server->add_handler(http_query_method::post, _root_uri, [&](http_query &query) { on_post(query); });
-
-    _source->on_device_settings_changed(_settings);
     _logger.log_message(log_severity::info, "Started.");
   }
 
@@ -45,11 +42,6 @@ namespace mesh::app::light_strip
     _logger.log_message(log_severity::info, "Stopped.");
   }
 
-  const device_settings& light_strip_controller::get_settings() const
-  {
-    return _settings;
-  }
-
   void light_strip_controller::worker()
   {
     vector<color_rgb> lights;
@@ -58,9 +50,9 @@ namespace mesh::app::light_strip
     {
       auto now = steady_clock::now();
 
-      if(lights.size() != _settings.light_count)
+      if(lights.size() != _settings.device.light_count)
       {
-        lights.resize(_settings.light_count);
+        lights.resize(_settings.device.light_count);
         lights_view = lights;
       }
 
@@ -72,7 +64,7 @@ namespace mesh::app::light_strip
       _brightness_processor->process(lights_view);
       _strip->push_pixels(lights_view);
 
-      this_thread::sleep_until(now + _settings.interval);
+      this_thread::sleep_until(now + _settings.device.interval);
     }
   }
 
@@ -85,12 +77,12 @@ namespace mesh::app::light_strip
     }
     else if(strcmp(query.uri(), _brightness_uri) == 0)
     {
-      auto json = json_serializer<brightness_processor_settings>::to_json(*_brightness_processor->get_settings());
+      auto json = json_serializer<brightness_processor_settings>::to_json(_settings.brightness_processor);
       query.return_text(json->to_string());
     }
     else if(strcmp(query.uri(), _device_uri) == 0)
     {
-      auto json = json_serializer<device_settings>::to_json(_settings);
+      auto json = json_serializer<device_settings>::to_json(_settings.device);
       query.return_text(json->to_string());
     }
   }
@@ -115,10 +107,9 @@ namespace mesh::app::light_strip
   {
     auto body = query.get_text();
     auto json = json_value::from_string(body);
-    brightness_processor_settings settings;
-    if(json_serializer<brightness_processor_settings>::from_json(json, settings))
+    if(json_serializer<brightness_processor_settings>::from_json(json, _settings.brightness_processor))
     {
-      _brightness_processor->apply_settings(&settings);
+      _brightness_processor->on_settings_changed();
       _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
     }
     else
@@ -134,23 +125,35 @@ namespace mesh::app::light_strip
     unique_ptr<light_source_settings> settings;
     if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
     {
+      switch(settings->type())
+      {
+        case light_source_type::static_source:
+          _settings.static_source = static_cast<const static_source_settings&>(*settings);
+        break;
+        case light_source_type::rainbow_source:
+          _settings.rainbow_source = static_cast<const rainbow_source_settings&>(*settings);
+        break;
+      }
+
       if(settings->type() != _source->type())
       {
         lock_guard<mutex> lock(_mutex);
         switch(settings->type())
         {
           case light_source_type::static_source:
-            _source = make_unique<static_source>();
+            _source = make_unique<static_source>(&_settings);
           break;
           case light_source_type::rainbow_source:
-            _source = make_unique<rainbow_source>();
+            _source = make_unique<rainbow_source>(&_settings);
           break;
         }
-        _source->on_device_settings_changed(_settings);
         _logger.log_message(log_severity::info, "Lighting mode changed.");
       }
+      else
+      {
+        _source->on_settings_changed();
+      }
 
-      _source->apply_settings(settings.get());
       _logger.log_message(log_severity::info, "Applied lighting mode settings.");
     }
     else
@@ -163,7 +166,6 @@ namespace mesh::app::light_strip
   {
     auto body = query.get_text();
     auto json = json_value::from_string(body);
-    json_serializer<device_settings>::from_json(json, _settings);
-    _source->on_device_settings_changed(_settings);
+    json_serializer<device_settings>::from_json(json, _settings.device);
   }
 }
