@@ -4,12 +4,6 @@
 using namespace std;
 using namespace mesh::app::light_strip::sources;
 
-namespace mesh::infrastructure
-{
-  template<> const char* name_of<static_source_settings>() { return "static"; }
-  template<> const char* name_of<rainbow_source_settings>() { return "rainbow"; }
-}
-
 namespace mesh::serialization::json
 {
   std::unique_ptr<json_value> json_serializer<static_source_settings>::to_json(const static_source_settings& value)

@@ -5,12 +5,6 @@
 #include "serialization/json.hpp"
 #define ns app::light_strip::sources
 
-namespace mesh::infrastructure
-{
-  template<> const char* name_of<ns::static_source_settings>();
-  template<> const char* name_of<ns::rainbow_source_settings>();
-}
-
 namespace mesh::serialization::json
 {
   template<>

@@ -4,7 +4,7 @@ using namespace std;
 
 namespace mesh::app::light_strip::sources
 {
-  light_source_type static_source_settings::source_type() const
+  light_source_type static_source_settings::type() const
   {
     return light_source_type::static_source;
   }
@@ -15,7 +15,7 @@ namespace mesh::app::light_strip::sources
     apply_settings(&default_settings);
   }
 
-  light_source_type static_source::source_type() const
+  light_source_type static_source::type() const
   {
     return light_source_type::static_source;
   }

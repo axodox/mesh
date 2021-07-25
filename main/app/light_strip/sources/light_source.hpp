@@ -13,13 +13,13 @@ namespace mesh::app::light_strip::sources
   struct light_source_settings
   {
     virtual ~light_source_settings() = default;
-    virtual light_source_type source_type() const = 0;
+    virtual light_source_type type() const = 0;
   };
 
   class light_source
   {
   public:
-    virtual light_source_type source_type() const = 0;
+    virtual light_source_type type() const = 0;
     virtual ~light_source() = default;
 
     virtual void apply_settings(const light_source_settings *settings) {}

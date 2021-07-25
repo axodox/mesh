@@ -12,7 +12,7 @@ namespace mesh::infrastructure
   template<typename type_t>
   const char* name_of()
   {
-    return nullptr;
+    return type_t::type_name;
   }
 }
 

@@ -110,10 +110,10 @@ namespace mesh::app::light_strip
     unique_ptr<light_source_settings> settings;
     if(json && json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
     {
-      if(settings->source_type() != _source->source_type())
+      if(settings->type() != _source->type())
       {
         lock_guard<mutex> lock(_mutex);
-        switch(settings->source_type())
+        switch(settings->type())
         {
           case light_source_type::static_source:
             _source = make_unique<static_source>();
