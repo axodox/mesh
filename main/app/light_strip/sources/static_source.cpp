@@ -1,36 +1,12 @@
 #include "static_source.hpp"
-#include "app\light_strip\helpers\serialization.hpp"
 
 using namespace std;
-using namespace mesh::json;
-using namespace mesh::app::light_strip::helpers;
 
 namespace mesh::app::light_strip::sources
 {
   light_source_type static_source_settings::source_type() const
   {
     return light_source_type::static_source;
-  }
-
-  const char* static_source_settings::type_name() const
-  {
-    return "static";
-  }
-
-  std::unique_ptr<json_value> static_source_settings::to_json() const
-  {
-    auto object = make_unique<json_object>();
-    add_type_info(object.get());
-    object->set_value("color", color_rgb_to_json(color));
-    return object;
-  }
-
-  void static_source_settings::from_json(const json_value* value)
-  {
-    if (value->type() != json_type::object) return;
-
-    auto object = static_cast<const json_object*>(value);
-    color_rgb_from_json(object->at("color").get(), color);
   }
 
   static_source::static_source()

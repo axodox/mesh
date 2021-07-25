@@ -1,20 +1,16 @@
 #pragma once
 #include "color_processor.hpp"
 #include "numerics/float3.hpp"
-#include "infrastructure/json.hpp"
 #include <array>
 #include <vector>
 
 namespace mesh::app::light_strip::processors
 {
-  struct brightness_processor_settings : json::json_serializable<brightness_processor_settings>
+  struct brightness_processor_settings
   {
     numerics::float3 gamma{1.6f, 1.5f, 1.6f};
     float brightness = 1.f;
     float max_brightness = 0.7f;
-
-    virtual std::unique_ptr<json_value> to_json() const override;
-    virtual void from_json(const json_value* value) override;
   };
 
   class brightness_processor : public color_processor

@@ -1,9 +1,13 @@
 #include "light_strip_controller.hpp"
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
+#include "serialization/json.hpp"
 #include "networking/http_server.hpp"
+#include "app/light_strip/processors/brightness_processor.hpp"
+#include "app/light_strip/processors/json_serialization.hpp"
 #include "app/light_strip/sources/static_source.hpp"
 #include "app/light_strip/sources/rainbow_source.hpp"
+#include "app/light_strip/sources/json_serialization.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -11,7 +15,7 @@ using namespace mesh::graphics;
 using namespace mesh::peripherals;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
-using namespace mesh::json;
+using namespace mesh::serialization::json;
 using namespace mesh::app::light_strip::sources;
 using namespace mesh::app::light_strip::processors;
 
@@ -86,43 +90,47 @@ namespace mesh::app::light_strip
   void light_strip_controller::on_post_brightness(networking::http_query &query)
   {
     auto body = query.get_text();
-    auto settings = brightness_processor_settings::from_string(body);
-    if(!settings)
+    auto json = json_value::from_string(body);
+    brightness_processor_settings settings;
+    if(json && json_serializer<brightness_processor_settings>::from_json(json, settings))
+    {
+      _brightness_processor->apply_settings(&settings);
+      _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
+    }
+    else
     {
       _logger.log_message(log_severity::warning, "Failed to parse lighting brightness settings.");
-      return;
     }
-
-    _brightness_processor->apply_settings(settings.get());
-    _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
   }
 
   void light_strip_controller::on_post_mode(networking::http_query &query)
   {
     auto body = query.get_text();
-    auto settings = light_source_settings::from_string(body);
-    if(!settings)
+    auto json = json_value::from_string(body);
+    unique_ptr<light_source_settings> settings;
+    if(json && json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
+    {
+      if(settings->source_type() != _source->source_type())
+      {
+        lock_guard<mutex> lock(_mutex);
+        switch(settings->source_type())
+        {
+          case light_source_type::static_source:
+            _source = make_unique<static_source>();
+          break;
+          case light_source_type::rainbow_source:
+            _source = make_unique<rainbow_source>();
+          break;
+        }
+        _logger.log_message(log_severity::info, "Lighting mode changed.");
+      }
+
+      _source->apply_settings(settings.get());
+      _logger.log_message(log_severity::info, "Applied lighting mode settings.");
+    }
+    else
     {
       _logger.log_message(log_severity::warning, "Failed to parse lighting mode settings.");
-      return;
     }
-
-    if(settings->source_type() != _source->source_type())
-    {
-      lock_guard<mutex> lock(_mutex);
-      switch(settings->source_type())
-      {
-        case light_source_type::static_source:
-          _source = make_unique<static_source>();
-        break;
-        case light_source_type::rainbow_source:
-          _source = make_unique<rainbow_source>();
-        break;
-      }
-      _logger.log_message(log_severity::info, "Switched lighting mode to %s.", settings->type_name());
-    }
-
-    _source->apply_settings(settings.get());
-    _logger.log_message(log_severity::info, "Applied lighting mode settings.");
   }
 }

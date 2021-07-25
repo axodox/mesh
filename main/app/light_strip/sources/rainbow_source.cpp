@@ -1,14 +1,11 @@
 #include "rainbow_source.hpp"
-#include "app\light_strip\helpers\serialization.hpp"
 #include "app\light_strip\light_strip_controller.hpp"
 #include "numerics/math_extensions.hpp"
 
 using namespace std;
 using namespace std::chrono;
-using namespace mesh::json;
 using namespace mesh::graphics;
 using namespace mesh::numerics;
-using namespace mesh::app::light_strip::helpers;
 
 namespace mesh::app::light_strip::sources
 {
@@ -16,30 +13,7 @@ namespace mesh::app::light_strip::sources
   {
     return light_source_type::rainbow_source;
   }
-
-  const char* rainbow_source_settings::type_name() const
-  {
-    return "rainbow";
-  }
-
-  std::unique_ptr<json_value> rainbow_source_settings::to_json() const
-  {
-    auto object = make_unique<json_object>();
-    add_type_info(object.get());
-    object->set_value("spatialFrequency", spatial_frequency);
-    object->set_value("spatialVelocity", angular_velocity);
-    return object;
-  }
-
-  void rainbow_source_settings::from_json(const json_value* value)
-  {
-    if (value->type() != json_type::object) return;
-
-    auto object = static_cast<const json_object*>(value);
-    object->get_value("spatialFrequency", spatial_frequency);
-    object->get_value("spatialVelocity", angular_velocity);
-  }
-
+  
   rainbow_source::rainbow_source()
   {
     rainbow_source_settings default_settings{};
@@ -60,9 +34,9 @@ namespace mesh::app::light_strip::sources
 
   void rainbow_source::fill(infrastructure::array_view<graphics::color_rgb>& pixels)
   {
-    _angle += duration_cast<duration<float>>(light_strip_controller::interval).count() * angular_velocity;
+    _angle = wrap(_angle + duration_cast<duration<float>>(light_strip_controller::interval).count() * deg(angular_velocity), 0.f, 360.f);
 
-    auto angle = deg(_angle);
+    auto angle = _angle;
     auto angle_step = 360.f / pixels.size() * spatial_frequency;
     for(auto& pixel : pixels)
     {

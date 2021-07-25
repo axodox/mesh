@@ -1,6 +1,5 @@
 #pragma once
 #include "light_source.hpp"
-//#include "numerics\math_constants.hpp"
 #include <math.h>
 
 namespace mesh::app::light_strip::sources
@@ -11,10 +10,6 @@ namespace mesh::app::light_strip::sources
     float angular_velocity = float(M_PI);
 
     virtual light_source_type source_type() const override;
-    virtual const char* type_name() const;
-
-    virtual std::unique_ptr<json_value> to_json() const override;
-    virtual void from_json(const json_value* value) override;
   };
 
   class rainbow_source : public light_source
@@ -31,6 +26,6 @@ namespace mesh::app::light_strip::sources
     virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;
 
   private:
-    float _angle;
+    float _angle = 0.f;
   };
 }

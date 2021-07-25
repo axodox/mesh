@@ -7,7 +7,6 @@ idf_component_register(SRCS
                         "infrastructure/hasher.cpp"
                         "infrastructure/logger.cpp"
                         "infrastructure/text.cpp"
-                        "infrastructure/json.cpp"
 
                         "networking/mime_type.cpp"
                         "networking/http_query_method.cpp"
@@ -27,12 +26,22 @@ idf_component_register(SRCS
                         "storage/spiffs.cpp"
                         "storage/file_io.cpp"
 
+                        "serialization/json/json_value.cpp"
+                        "serialization/json/json_null.cpp"
+                        "serialization/json/json_boolean.cpp"
+                        "serialization/json/json_number.cpp"
+                        "serialization/json/json_string.cpp"
+                        "serialization/json/json_array.cpp"
+                        "serialization/json/json_object.cpp"
+
                         "app/angular_pages.cpp"
                         "app/integrated_led_blinker.cpp"
-                        "app/light_strip/helpers/serialization.cpp"
+                        "app/light_strip/helpers/json_serialization.cpp"
                         "app/light_strip/sources/static_source.cpp"
                         "app/light_strip/sources/rainbow_source.cpp"
+                        "app/light_strip/sources/json_serialization.cpp"
                         "app/light_strip/processors/brightness_processor.cpp"
+                        "app/light_strip/processors/json_serialization.cpp"
                         "app/light_strip/light_strip_controller.cpp"
 
                         "main.cpp"

@@ -1,34 +1,12 @@
 #include "brightness_processor.hpp"
-#include "app\light_strip\helpers\serialization.hpp"
 #include <cmath>
 
 using namespace std;
-using namespace mesh::json;
 using namespace mesh::numerics;
 using namespace mesh::graphics;
-using namespace mesh::app::light_strip::helpers;
 
 namespace mesh::app::light_strip::processors
 {
-  std::unique_ptr<json_value> brightness_processor_settings::to_json() const
-  {
-    auto object = make_unique<json_object>();
-    object->set_value("gamma", float3_to_json(gamma));
-    object->set_value("brightness", brightness);
-    object->set_value("max_brightness", max_brightness);
-    return object;
-  }
-
-  void brightness_processor_settings::from_json(const json_value* value)
-  {
-    if (value->type() != json_type::object) return;
-
-    auto object = static_cast<const json_object*>(value);
-    float3_from_json(object->at("gamma").get(), gamma);
-    object->get_value("brightness", brightness);
-    object->get_value("max_brightness", max_brightness);
-  }
-
   brightness_processor::brightness_processor()
   {
     brightness_processor_settings default_settings{};

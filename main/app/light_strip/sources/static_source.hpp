@@ -8,10 +8,6 @@ namespace mesh::app::light_strip::sources
     graphics::color_rgb color{ 10, 10, 10 };
 
     virtual light_source_type source_type() const override;
-    virtual const char* type_name() const;
-
-    virtual std::unique_ptr<json_value> to_json() const override;
-    virtual void from_json(const json_value* value) override;
   };
 
   class static_source : public light_source
