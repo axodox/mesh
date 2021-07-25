@@ -92,16 +92,19 @@ input[type=range] {
 }
 
 .property-row {
-  display: flex; 
+  display: flex;
   align-items: center;
+  align-content: center;
 
   & .property-name {
     margin: 6px;
-    width: 30%;
     text-align: right;
+    flex: 1 1 0px;
   }
 
   & .property-value {
     margin: 6px;
+    text-align: left;
+    flex: 1 1 0px;
   }
 }
