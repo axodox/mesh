@@ -4,6 +4,7 @@
 #include "serialization/json.hpp"
 #include "networking/http_server.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
+#include "storage/file_io.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -11,6 +12,7 @@ using namespace mesh::graphics;
 using namespace mesh::peripherals;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
+using namespace mesh::storage;
 using namespace mesh::serialization::json;
 using namespace mesh::app::light_strip::sources;
 using namespace mesh::app::light_strip::processors;
@@ -19,12 +21,13 @@ using namespace mesh::app::light_strip::settings;
 namespace mesh::app::light_strip
 {
   light_strip_controller::light_strip_controller() :
-    _strip(dependencies.resolve<peripherals::led_strip>()),
-    //_source(make_unique<static_source>()),
-    _source(make_unique<rainbow_source>(&_settings)),
-    _brightness_processor(make_unique<brightness_processor>(&_settings)),
-    _thread([&] { worker(); }, task_affinity::core_0, task_priority::maximum)
+    _strip(dependencies.resolve<peripherals::led_strip>())
   {
+    load_settings();
+    _brightness_processor = make_unique<brightness_processor>(&_settings);
+    initialize_source();
+    _thread = make_unique<task>([&] { worker(); }, task_affinity::core_0, task_priority::maximum);
+
     _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
     server->add_handler(http_query_method::get, _root_uri, [&](http_query &query) { on_get(query); });
@@ -38,7 +41,7 @@ namespace mesh::app::light_strip
 
     _logger.log_message(log_severity::info, "Stopping...");
     _isDisposed = true;
-    _thread.close();
+    _thread.reset();
     _logger.log_message(log_severity::info, "Stopped.");
   }
 
@@ -64,6 +67,7 @@ namespace mesh::app::light_strip
       _brightness_processor->process(lights_view);
       _strip->push_pixels(lights_view);
 
+      save_settings();
       this_thread::sleep_until(now + _settings.device.interval);
     }
   }
@@ -101,6 +105,8 @@ namespace mesh::app::light_strip
     {
       on_post_device(query);
     }
+
+    _last_settings_change = steady_clock::now();
   }
 
   void light_strip_controller::on_post_brightness(networking::http_query &query)
@@ -125,6 +131,7 @@ namespace mesh::app::light_strip
     unique_ptr<light_source_settings> settings;
     if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
     {
+      _settings.source_type = settings->type();
       switch(settings->type())
       {
         case light_source_type::static_source:
@@ -135,26 +142,7 @@ namespace mesh::app::light_strip
         break;
       }
 
-      if(settings->type() != _source->type())
-      {
-        lock_guard<mutex> lock(_mutex);
-        switch(settings->type())
-        {
-          case light_source_type::static_source:
-            _source = make_unique<static_source>(&_settings);
-          break;
-          case light_source_type::rainbow_source:
-            _source = make_unique<rainbow_source>(&_settings);
-          break;
-        }
-        _logger.log_message(log_severity::info, "Lighting mode changed.");
-      }
-      else
-      {
-        _source->on_settings_changed();
-      }
-
-      _logger.log_message(log_severity::info, "Applied lighting mode settings.");
+      initialize_source();
     }
     else
     {
@@ -167,5 +155,54 @@ namespace mesh::app::light_strip
     auto body = query.get_text();
     auto json = json_value::from_string(body);
     json_serializer<device_settings>::from_json(json, _settings.device);
+  }
+
+  void light_strip_controller::load_settings()
+  {
+    auto text = file_io::read_all_text(_settings_path);    
+    auto json = json_value::from_string(text);
+    
+    if(json_serializer<light_strip_settings>::from_json(json, _settings))
+    {
+      _logger.log_message(log_severity::info, "Loaded settings from %s.", _settings_path);
+    }
+    else
+    {
+      _logger.log_message(log_severity::warning, "Failed to load settings from %s. Using defaults.", _settings_path);
+    }
+  }
+
+  void light_strip_controller::save_settings()
+  {
+    if(!_last_settings_change.has_value() || steady_clock::now() - _last_settings_change.value() < _settings_save_delay) return;
+    _last_settings_change.reset();
+
+    auto json = json_serializer<light_strip_settings>::to_json(_settings);
+    file_io::write_all_text(_settings_path, json->to_string());
+
+    _logger.log_message(log_severity::info, "Saved settings to %s.", _settings_path);
+  }
+
+  void light_strip_controller::initialize_source()
+  {
+    if(!_source || _settings.source_type != _source->type())
+    {
+      lock_guard<mutex> lock(_mutex);
+      switch(_settings.source_type)
+      {
+        case light_source_type::static_source:
+          _source = make_unique<static_source>(&_settings);
+        break;
+        case light_source_type::rainbow_source:
+          _source = make_unique<rainbow_source>(&_settings);
+        break;
+      }
+      _logger.log_message(log_severity::info, "Lighting mode changed.");
+    }
+    else
+    {
+      _source->on_settings_changed();
+      _logger.log_message(log_severity::info, "Applied lighting mode settings.");
+    }
   }
 }

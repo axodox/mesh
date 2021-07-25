@@ -13,6 +13,7 @@ namespace mesh::app::light_strip::settings
     device_settings device{};
     brightness_processor_settings brightness_processor{};
 
+    light_source_type source_type = light_source_type::rainbow_source;
     static_source_settings static_source{};
     rainbow_source_settings rainbow_source{};
   };

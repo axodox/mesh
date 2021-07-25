@@ -26,6 +26,7 @@ namespace mesh::app::light_strip
     inline static const char * _mode_uri = "/api/light_strip/mode";
     inline static const char * _brightness_uri = "/api/light_strip/brightness";
     inline static const char * _device_uri = "/api/light_strip/device";
+    inline static const char * _settings_path = "/data/light_strip.json";
     inline static const std::chrono::seconds _settings_save_delay = std::chrono::seconds(10);
 
   public:
@@ -39,7 +40,7 @@ namespace mesh::app::light_strip
     std::unique_ptr<sources::light_source> _source;
     std::unique_ptr<processors::brightness_processor> _brightness_processor;
     std::mutex _mutex;
-    infrastructure::task _thread;    
+    std::unique_ptr<infrastructure::task> _thread;    
     std::optional<std::chrono::steady_clock::time_point> _last_settings_change;
 
     void worker();
@@ -49,5 +50,10 @@ namespace mesh::app::light_strip
     void on_post_brightness(networking::http_query &query);
     void on_post_mode(networking::http_query &query);
     void on_post_device(networking::http_query &query);
+
+    void load_settings();
+    void save_settings();
+
+    void initialize_source();
   };
 }
