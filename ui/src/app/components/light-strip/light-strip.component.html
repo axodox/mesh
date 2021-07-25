@@ -1,4 +1,4 @@
-<select [value]="source?.$type ?? 'none'" (selectionChange)="onSourceChange($event.value)">
+<select [value]="source?.$type ?? 'none'" (change)="onSourceChange($event)">
   <option value="none">Off</option>
   <option value="static">Static</option>
   <option value="rainbow">Rainbow</option>

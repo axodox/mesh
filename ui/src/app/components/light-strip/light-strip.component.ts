@@ -24,9 +24,9 @@ export class LightStripComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  async onSourceChange(value: LightSourceType) {
+  async onSourceChange(event: any) {
     let sourceSettings = new NoneSourceSettings();
-    sourceSettings.$type = value;
+    sourceSettings.$type = event.target.value;
     await this.lightStripService.setLightSourceSettings(sourceSettings).toPromise();
   }
 }

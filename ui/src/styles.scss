@@ -1,1 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
+$background-color: #3A3A3A;
+$accent-color: #107C10;
+$control-color: #505050;
+
+body {
+  background-color: $background-color;
+  color: #ffffff;
+}
+
+select {
+  background-color: $control-color;
+  border-radius: 4px;
+  border-width: 2px;
+  border-color: $control-color;
+  padding: 6px;
+  color: #ffffff;
+
+  &:hover, &:focus {
+    background-color: $accent-color;
+    border-color: transparent;
+  }
+}
+
+option {
+  background-color: $background-color;
+}

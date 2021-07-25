@@ -3,7 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http'; 
 
 import { AppComponent } from './app.component';
-import { LightStripComponent } from './Components/light-strip/light-strip.component';
+import { LightStripComponent } from './components/light-strip/light-strip.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -12,6 +13,7 @@ import { LightStripComponent } from './Components/light-strip/light-strip.compon
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     HttpClientModule,
     HttpClientModule
   ],
