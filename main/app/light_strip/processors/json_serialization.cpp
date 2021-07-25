@@ -11,7 +11,7 @@ namespace mesh::serialization::json
     auto object = make_unique<json_object>();
     object->set_value("gamma", value.gamma);
     object->set_value("brightness", value.brightness);
-    object->set_value("max_brightness", value.max_brightness);
+    object->set_value("maxBrightness", value.max_brightness);
     return object;
   }
 
@@ -22,7 +22,7 @@ namespace mesh::serialization::json
       auto object = static_cast<const json_object*>(json.get());
       object->get_value("gamma", value.gamma);
       object->get_value("brightness", value.brightness);
-      object->get_value("max_brightness", value.max_brightness);
+      object->get_value("maxBrightness", value.max_brightness);
       return true;
     }
     else

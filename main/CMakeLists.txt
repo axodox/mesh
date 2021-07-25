@@ -42,6 +42,7 @@ idf_component_register(SRCS
                         "app/light_strip/sources/json_serialization.cpp"
                         "app/light_strip/processors/brightness_processor.cpp"
                         "app/light_strip/processors/json_serialization.cpp"
+                        "app/light_strip/json_serialization.cpp"
                         "app/light_strip/light_strip_controller.cpp"
 
                         "main.cpp"

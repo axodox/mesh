@@ -16,5 +16,4 @@ namespace mesh::infrastructure
   }
 }
 
-
 #define nameof(type) mesh::infrastructure::name_of<type>()

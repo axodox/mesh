@@ -5,8 +5,6 @@
 #include "networking/http_server.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
 #include "app/light_strip/processors/json_serialization.hpp"
-#include "app/light_strip/sources/static_source.hpp"
-#include "app/light_strip/sources/rainbow_source.hpp"
 #include "app/light_strip/sources/json_serialization.hpp"
 
 using namespace std;
