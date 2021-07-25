@@ -8,6 +8,13 @@
 namespace mesh::serialization::json
 {
   template<>
+  struct json_serializer<ns::device_settings>
+  {
+    static std::unique_ptr<json_value> to_json(const ns::device_settings& value);
+    static bool from_json(const std::unique_ptr<json_value>& json, ns::device_settings& value);
+  };
+
+  template<>
   struct json_serializer<ns::static_source_settings>
   {
     static std::unique_ptr<json_value> to_json(const ns::static_source_settings& value);

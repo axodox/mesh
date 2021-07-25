@@ -19,6 +19,11 @@ namespace mesh::app::light_strip::sources
     return light_source_type::rainbow_source;
   }
 
+  void rainbow_source::on_device_settings_changed(const device_settings& settings)
+  {
+    _interval = duration_cast<duration<float>>(settings.interval);
+  }
+
   const light_source_settings * rainbow_source::get_settings() const
   {
     return &_settings;
@@ -31,7 +36,7 @@ namespace mesh::app::light_strip::sources
 
   void rainbow_source::fill(infrastructure::array_view<graphics::color_rgb>& pixels)
   {
-    _angle = wrap(_angle + duration_cast<duration<float>>(light_strip_controller::interval).count() * deg(_settings.angular_velocity), 0.f, 360.f);
+    _angle = wrap(_angle + _interval.count() * deg(_settings.angular_velocity), 0.f, 360.f);
 
     auto angle = _angle;
     auto angle_step = 360.f / pixels.size() * _settings.spatial_frequency;

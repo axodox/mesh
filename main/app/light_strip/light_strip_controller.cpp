@@ -19,10 +19,7 @@ using namespace mesh::app::light_strip::processors;
 
 namespace mesh::app::light_strip
 {
-  const std::chrono::milliseconds light_strip_controller::interval = milliseconds(16);
-
   light_strip_controller::light_strip_controller() :
-    _light_count(4),
     _strip(dependencies.resolve<peripherals::led_strip>()),
     //_source(make_unique<static_source>()),
     _source(make_unique<rainbow_source>()),
@@ -33,6 +30,8 @@ namespace mesh::app::light_strip
     auto server = dependencies.resolve<http_server>();
     server->add_handler(http_query_method::get, _root_uri, [&](http_query &query) { on_get(query); });
     server->add_handler(http_query_method::post, _root_uri, [&](http_query &query) { on_post(query); });
+
+    _source->on_device_settings_changed(_settings);
     _logger.log_message(log_severity::info, "Started.");
   }
 
@@ -46,6 +45,11 @@ namespace mesh::app::light_strip
     _logger.log_message(log_severity::info, "Stopped.");
   }
 
+  const device_settings& light_strip_controller::get_settings() const
+  {
+    return _settings;
+  }
+
   void light_strip_controller::worker()
   {
     vector<color_rgb> lights;
@@ -54,9 +58,9 @@ namespace mesh::app::light_strip
     {
       auto now = steady_clock::now();
 
-      if(lights.size() != _light_count)
+      if(lights.size() != _settings.light_count)
       {
-        lights.resize(_light_count);
+        lights.resize(_settings.light_count);
         lights_view = lights;
       }
 
@@ -68,7 +72,7 @@ namespace mesh::app::light_strip
       _brightness_processor->process(lights_view);
       _strip->push_pixels(lights_view);
 
-      this_thread::sleep_until(now + interval);
+      this_thread::sleep_until(now + _settings.interval);
     }
   }
 
@@ -84,6 +88,11 @@ namespace mesh::app::light_strip
       auto json = json_serializer<brightness_processor_settings>::to_json(*_brightness_processor->get_settings());
       query.return_text(json->to_string());
     }
+    else if(strcmp(query.uri(), _device_uri) == 0)
+    {
+      auto json = json_serializer<device_settings>::to_json(_settings);
+      query.return_text(json->to_string());
+    }
   }
 
   void light_strip_controller::on_post(networking::http_query &query)
@@ -96,6 +105,10 @@ namespace mesh::app::light_strip
     {
       on_post_brightness(query);
     }
+    else if(strcmp(query.uri(), _device_uri) == 0)
+    {
+      on_post_device(query);
+    }
   }
 
   void light_strip_controller::on_post_brightness(networking::http_query &query)
@@ -103,7 +116,7 @@ namespace mesh::app::light_strip
     auto body = query.get_text();
     auto json = json_value::from_string(body);
     brightness_processor_settings settings;
-    if(json && json_serializer<brightness_processor_settings>::from_json(json, settings))
+    if(json_serializer<brightness_processor_settings>::from_json(json, settings))
     {
       _brightness_processor->apply_settings(&settings);
       _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
@@ -119,7 +132,7 @@ namespace mesh::app::light_strip
     auto body = query.get_text();
     auto json = json_value::from_string(body);
     unique_ptr<light_source_settings> settings;
-    if(json && json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
+    if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
     {
       if(settings->type() != _source->type())
       {
@@ -133,6 +146,7 @@ namespace mesh::app::light_strip
             _source = make_unique<rainbow_source>();
           break;
         }
+        _source->on_device_settings_changed(_settings);
         _logger.log_message(log_severity::info, "Lighting mode changed.");
       }
 
@@ -143,5 +157,13 @@ namespace mesh::app::light_strip
     {
       _logger.log_message(log_severity::warning, "Failed to parse lighting mode settings.");
     }
+  }
+
+  void light_strip_controller::on_post_device(networking::http_query &query)
+  {
+    auto body = query.get_text();
+    auto json = json_value::from_string(body);
+    json_serializer<device_settings>::from_json(json, _settings);
+    _source->on_device_settings_changed(_settings);
   }
 }

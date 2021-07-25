@@ -19,6 +19,8 @@ namespace mesh::app::light_strip::sources
   public:
     virtual light_source_type type() const override;
 
+    virtual void on_device_settings_changed(const device_settings& settings) override;
+
     virtual const light_source_settings * get_settings() const override;
     virtual void apply_settings(const light_source_settings* settings) override;
 
@@ -27,5 +29,6 @@ namespace mesh::app::light_strip::sources
   private:
     rainbow_source_settings _settings{};
     float _angle = 0.f;
+    std::chrono::duration<float> _interval;
   };
 }
