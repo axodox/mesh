@@ -26,15 +26,19 @@ export class DeviceSettings {
 }
 
 export enum LightSourceType {
-  Unknown = "unknown",
+  None = "none",
   Static = "static",
   Rainbow = "rainbow"
 }
 
-export type AnyLightSourceSettings = StaticSourceSettings | RainbowSourceSettings
+export type AnyLightSourceSettings = NoneSourceSettings | StaticSourceSettings | RainbowSourceSettings
 
 export abstract class LightSourceSettings {
-  $type = LightSourceType.Unknown;
+  $type: LightSourceType | undefined;
+}
+
+export class NoneSourceSettings extends LightSourceSettings {
+  $type = LightSourceType.None;
 }
 
 export class StaticSourceSettings extends LightSourceSettings {

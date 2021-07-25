@@ -12,27 +12,27 @@ export class LightStripService {
     private http: HttpClient) {
   }
 
-  GetDeviceSettings() {
+  getDeviceSettings() {
     return this.http.get<DeviceSettings>(this.urlBase + "device");
   }
 
-  SetDeviceSettings(value: DeviceSettings) {
+  setDeviceSettings(value: DeviceSettings) {
     return this.http.post<DeviceSettings>(this.urlBase + "device", value);
   }
 
-  GetBrightnessSettings() {
+  getBrightnessSettings() {
     return this.http.get<BrightnessProcessorSettings>(this.urlBase + "brightness");
   }
 
-  SetBrightnessSettings(value: BrightnessProcessorSettings) {
+  setBrightnessSettings(value: BrightnessProcessorSettings) {
     return this.http.post<BrightnessProcessorSettings>(this.urlBase + "brightness", value);
   }
 
-  GetLightSourceSettings() {
-    return this.http.get<AnyLightSourceSettings>(this.urlBase + "source");
+  getLightSourceSettings() {
+    return this.http.get<AnyLightSourceSettings>(this.urlBase + "mode");
   }
 
-  SetLightSourceSettings(value: AnyLightSourceSettings) {
-    return this.http.post<AnyLightSourceSettings>(this.urlBase + "source", value);
+  setLightSourceSettings(value: AnyLightSourceSettings) {
+    return this.http.post<AnyLightSourceSettings>(this.urlBase + "mode", value);
   }
 }
