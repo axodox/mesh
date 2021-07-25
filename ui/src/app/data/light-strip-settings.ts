@@ -31,7 +31,7 @@ export enum LightSourceType {
   Rainbow = "rainbow"
 }
 
-export type AnyLightSourceSettings = NoneSourceSettings | StaticSourceSettings | RainbowSourceSettings
+export type AnyLightSourceSettings = NoneSourceSettings | StaticSourceSettings | RainbowSourceSettings | any
 
 export abstract class LightSourceSettings {
   $type: LightSourceType | undefined;

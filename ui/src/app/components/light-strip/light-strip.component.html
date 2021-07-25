@@ -1,5 +1,12 @@
-<select [value]="source?.$type ?? 'none'" (change)="onSourceChange($event)">
-  <option value="none">Off</option>
-  <option value="static">Static</option>
-  <option value="rainbow">Rainbow</option>
-</select>
+<div class="property-row">
+  <div class="property-name">Source</div>
+  <div class="property-value">
+    <select [value]="getType()" (change)="onSourceChange($event)">
+      <option value="none">Off</option>
+      <option value="static">Static</option>
+      <option value="rainbow">Rainbow</option>
+    </select>
+  </div>
+</div>
+
+<app-static-light-source *ngIf="getType() == 'static'" [source]="source"></app-static-light-source>

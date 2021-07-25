@@ -6,10 +6,10 @@ namespace mesh::infrastructure
 {
   std::string format_text(const char* format, va_list args)
   {
-    auto size = vsnprintf(nullptr, 0, format, args) + 1;
+    auto size = vsnprintf(nullptr, 0, format, args);
     string buffer(size, '\0');
 
-    vsnprintf(buffer.data(), size, format, args);
+    vsnprintf(buffer.data(), size + 1, format, args);
     return buffer;
   }
 

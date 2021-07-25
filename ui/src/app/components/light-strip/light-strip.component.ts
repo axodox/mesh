@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { LightSourceSettings, LightSourceType, NoneSourceSettings } from 'src/app/data/light-strip-settings';
+import { AnyLightSourceSettings, NoneSourceSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
 @Component({
@@ -10,23 +10,27 @@ import { LightStripService } from 'src/app/services/light-strip-service';
 })
 export class LightStripComponent implements OnInit {
 
-  source: LightSourceSettings | undefined;
+  source: AnyLightSourceSettings;
+
+  getType() {
+    return this.source?.$type ?? "none";
+  }
 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
     private readonly lightStripService : LightStripService
-  ) { 
-    
-  }
+  ) { }
 
   async ngOnInit() {
     this.source = await this.lightStripService.getLightSourceSettings().toPromise();
-    this.changeDetector.markForCheck();
+    this.changeDetector.detectChanges();
   }
 
   async onSourceChange(event: any) {
     let sourceSettings = new NoneSourceSettings();
     sourceSettings.$type = event.target.value;
     await this.lightStripService.setLightSourceSettings(sourceSettings).toPromise();
+    this.source = await this.lightStripService.getLightSourceSettings().toPromise();
+    this.changeDetector.detectChanges();
   }
 }

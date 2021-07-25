@@ -25,13 +25,14 @@ namespace mesh::serialization::json
         stream << "\\t";
         break;
       case '\0':
-        stream << "\\0";
-        break;
+        stream << "\"";
+        return;
       default:
         stream << character;
         break;
       }
     }
+
     stream << "\"";
   }
 

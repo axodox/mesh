@@ -6,6 +6,7 @@ $control-color: #505050;
 body {
   background-color: $background-color;
   color: #ffffff;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 select {
@@ -24,4 +25,37 @@ select {
 
 option {
   background-color: $background-color;
+}
+
+input[type=color] {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  border-radius: 100%;
+  width: 32px;
+  height: 32px;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0; 
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 100%;
+  }
+}
+
+.property-row {
+  display: flex; 
+  align-items: center;
+
+  & .property-name {
+    margin: 6px;
+    width: 30%;
+    text-align: right;
+  }
+
+  & .property-value {
+    margin: 6px;
+  }
 }
