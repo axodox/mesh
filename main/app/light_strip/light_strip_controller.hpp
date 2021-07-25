@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <optional>
 #include "app/light_strip/sources/light_source.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
 #include "app/light_strip/sources/static_source.hpp"
@@ -31,6 +32,7 @@ namespace mesh::app::light_strip
     inline static const char * _mode_uri = "/api/light_strip/mode";
     inline static const char * _brightness_uri = "/api/light_strip/brightness";
     inline static const char * _device_uri = "/api/light_strip/device";
+    inline static const std::chrono::seconds _settings_save_delay = std::chrono::seconds(10);
 
   public:
     light_strip_controller();
@@ -46,6 +48,8 @@ namespace mesh::app::light_strip
     std::unique_ptr<processors::brightness_processor> _brightness_processor;
     std::mutex _mutex;
     infrastructure::task _thread;
+    light_strip_settings _global_settings;
+    std::optional<std::chrono::steady_clock::time_point> _last_settings_change;
 
     void worker();
     void on_get(networking::http_query &query);
