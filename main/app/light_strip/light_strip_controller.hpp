@@ -13,20 +13,12 @@
 
 namespace mesh::app::light_strip
 {
-  struct light_strip_segment
-  {
-    uint16_t led_count;
-    numerics::float3 end_position;
-  };
-
-  struct light_strip_layout
-  {
-    std::vector<light_strip_segment> segments;
-  };
-
   class light_strip_controller
   {
     static constexpr infrastructure::logger _logger{"light_strip_controller"};
+    inline static const char * _root_uri = "/api/light_strip/*";
+    inline static const char * _mode_uri = "/api/light_strip/mode";
+    inline static const char * _brightness_uri = "/api/light_strip/brightness";
 
   public:
     static const std::chrono::milliseconds interval;
@@ -44,6 +36,7 @@ namespace mesh::app::light_strip
     infrastructure::task _thread;
 
     void worker();
+    void on_get(networking::http_query &query);
     void on_post(networking::http_query &query);
 
     void on_post_brightness(networking::http_query &query);

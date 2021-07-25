@@ -13,31 +13,28 @@ namespace mesh::app::light_strip::sources
   {
     return light_source_type::rainbow_source;
   }
-  
-  rainbow_source::rainbow_source()
-  {
-    rainbow_source_settings default_settings{};
-    apply_settings(&default_settings);
-  }
 
   light_source_type rainbow_source::type() const
   {
     return light_source_type::rainbow_source;
   }
 
+  const light_source_settings * rainbow_source::get_settings() const
+  {
+    return &_settings;
+  }
+
   void rainbow_source::apply_settings(const light_source_settings* settings)
   {
-    auto rainbow_settings = static_cast<const rainbow_source_settings*>(settings);
-    spatial_frequency = rainbow_settings->spatial_frequency;
-    angular_velocity = rainbow_settings->angular_velocity;
+    _settings = static_cast<const rainbow_source_settings&>(*settings);
   }
 
   void rainbow_source::fill(infrastructure::array_view<graphics::color_rgb>& pixels)
   {
-    _angle = wrap(_angle + duration_cast<duration<float>>(light_strip_controller::interval).count() * deg(angular_velocity), 0.f, 360.f);
+    _angle = wrap(_angle + duration_cast<duration<float>>(light_strip_controller::interval).count() * deg(_settings.angular_velocity), 0.f, 360.f);
 
     auto angle = _angle;
-    auto angle_step = 360.f / pixels.size() * spatial_frequency;
+    auto angle_step = 360.f / pixels.size() * _settings.spatial_frequency;
     for(auto& pixel : pixels)
     {
       pixel = color_hsl{ wrap(angle, 0.f, 360.f), 1.f, 0.1f };

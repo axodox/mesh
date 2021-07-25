@@ -22,6 +22,7 @@ namespace mesh::networking
     void set_header(const char* field, const char* value);
 
     void return_text(const char* text);
+    void return_text(const std::string text);
     http_text_stream return_text_stream();
 
     void return_blob(const char* mime_type, const infrastructure::array_view<uint8_t>& data);

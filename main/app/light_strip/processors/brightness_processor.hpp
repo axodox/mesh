@@ -18,13 +18,13 @@ namespace mesh::app::light_strip::processors
   public:
     brightness_processor();
 
+    const brightness_processor_settings* get_settings() const;
     void apply_settings(const brightness_processor_settings* settings);
+
     virtual void process(infrastructure::array_view<graphics::color_rgb>& pixels) override;
 
   private:
-    float _brightness;
-    float _max_brightness;
-    numerics::float3 _gamma;
+    brightness_processor_settings _settings{};
     std::vector<numerics::float3> _buffer;
 
     std::array<float, 256> _gamma_mapping_r;

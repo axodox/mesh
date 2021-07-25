@@ -39,6 +39,11 @@ namespace mesh::networking
     check_result(httpd_resp_sendstr(_request, text));
   }
 
+  void http_query::return_text(const std::string text)
+  {
+    return_text(text.c_str());
+  }
+
   http_text_stream http_query::return_text_stream()
   {
     check_has_response();

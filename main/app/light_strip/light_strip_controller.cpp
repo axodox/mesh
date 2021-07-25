@@ -33,9 +33,8 @@ namespace mesh::app::light_strip
   {
     _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
-    server->add_handler(http_query_method::post, "/api/light_strip/*", [&](http_query &query) {
-      on_post(query); 
-    });
+    server->add_handler(http_query_method::get, _root_uri, [&](http_query &query) { on_get(query); });
+    server->add_handler(http_query_method::post, _root_uri, [&](http_query &query) { on_post(query); });
     _logger.log_message(log_severity::info, "Started.");
   }
 
@@ -75,13 +74,27 @@ namespace mesh::app::light_strip
     }
   }
 
+  void light_strip_controller::on_get(networking::http_query &query)
+  {
+    if(strcmp(query.uri(), _mode_uri) == 0)
+    {
+      auto json = json_serializer<unique_ptr<light_source_settings>>::to_json(_source->get_settings());
+      query.return_text(json->to_string());
+    }
+    else if(strcmp(query.uri(), _brightness_uri) == 0)
+    {
+      auto json = json_serializer<brightness_processor_settings>::to_json(*_brightness_processor->get_settings());
+      query.return_text(json->to_string());
+    }
+  }
+
   void light_strip_controller::on_post(networking::http_query &query)
   {
-    if(strcmp(query.uri(), "/api/light_strip/mode") == 0)
+    if(strcmp(query.uri(), _mode_uri) == 0)
     {
       on_post_mode(query);
     }
-    else if(strcmp(query.uri(), "/api/light_strip/brightness") == 0)
+    else if(strcmp(query.uri(), _brightness_uri) == 0)
     {
       on_post_brightness(query);
     }

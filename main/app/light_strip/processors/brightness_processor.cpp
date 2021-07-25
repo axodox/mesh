@@ -9,16 +9,17 @@ namespace mesh::app::light_strip::processors
 {
   brightness_processor::brightness_processor()
   {
-    brightness_processor_settings default_settings{};
-    apply_settings(&default_settings);
     rebuild_gamma();
+  }
+
+  const brightness_processor_settings* brightness_processor::get_settings() const
+  {
+    return &_settings;
   }
 
   void brightness_processor::apply_settings(const brightness_processor_settings* settings)
   {
-    _brightness = settings->brightness;
-    _max_brightness = settings->max_brightness;
-    _gamma = settings->gamma;
+    _settings = *settings;
     rebuild_gamma();
   }
 
@@ -46,7 +47,7 @@ namespace mesh::app::light_strip::processors
     }
 
     auto brightness = (sum.x + sum.y + sum.z) / 3.f / 255.f / pixels.size();
-    auto factor = brightness > _max_brightness ? _max_brightness / brightness : 1.f;
+    auto factor = brightness > _settings.max_brightness ? _settings.max_brightness / brightness : 1.f;
 
     //Gamma correct colors and perform dithering
     buffer = _buffer.data();
@@ -70,8 +71,8 @@ namespace mesh::app::light_strip::processors
 
   void brightness_processor::rebuild_gamma()
   {
-    _gamma_mapping_r = make_gamma(_gamma.x, _brightness);
-    _gamma_mapping_g = make_gamma(_gamma.y, _brightness);
-    _gamma_mapping_b = make_gamma(_gamma.z, _brightness);
+    _gamma_mapping_r = make_gamma(_settings.gamma.x, _settings.brightness);
+    _gamma_mapping_g = make_gamma(_settings.gamma.y, _settings.brightness);
+    _gamma_mapping_b = make_gamma(_settings.gamma.z, _settings.brightness);
   }
 }

@@ -17,17 +17,15 @@ namespace mesh::app::light_strip::sources
   class rainbow_source : public light_source
   {
   public:
-    uint8_t spatial_frequency;
-    float angular_velocity;
-
-    rainbow_source();
-
     virtual light_source_type type() const override;
 
+    virtual const light_source_settings * get_settings() const override;
     virtual void apply_settings(const light_source_settings* settings) override;
+
     virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;
 
   private:
+    rainbow_source_settings _settings{};
     float _angle = 0.f;
   };
 }

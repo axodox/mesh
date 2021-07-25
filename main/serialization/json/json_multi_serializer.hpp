@@ -66,7 +66,7 @@ namespace mesh::serialization::json
     inline static deserializer_map_t _deserializers = build_deserializer_map();
 
     //Serializers
-    typedef std::unique_ptr<json_value>(*to_json_t)(const std::unique_ptr<base_t>& value);
+    typedef std::unique_ptr<json_value>(*to_json_t)(const base_t* value);
 
     struct json_serializer_t
     {
@@ -77,7 +77,7 @@ namespace mesh::serialization::json
     typedef std::map<std::type_index, json_serializer_t> serializer_map_t;
 
     template<typename value_t>
-    static std::unique_ptr<json_value> serialize(const std::unique_ptr<base_t>& value)
+    static std::unique_ptr<json_value> serialize(const base_t* value)
     {
       return json_serializer<value_t>::to_json(static_cast<const value_t&>(*value));
     }
@@ -106,7 +106,7 @@ namespace mesh::serialization::json
     inline static serializer_map_t _serializers = build_serializer_map();
 
   public:
-    static std::unique_ptr<json_value> to_json(const std::unique_ptr<base_t>& value)
+    static std::unique_ptr<json_value> to_json(const base_t* value)
     {
       auto it = _serializers.find(typeid(*value));
       if (it != _serializers.end())
@@ -123,6 +123,11 @@ namespace mesh::serialization::json
       {
         return nullptr;
       }
+    }
+
+    static std::unique_ptr<json_value> to_json(const std::unique_ptr<base_t>& value)
+    {
+      return to_json(value.get());
     }
 
     static bool from_json(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value)

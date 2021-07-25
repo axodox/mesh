@@ -22,7 +22,9 @@ namespace mesh::app::light_strip::sources
     virtual light_source_type type() const = 0;
     virtual ~light_source() = default;
 
-    virtual void apply_settings(const light_source_settings *settings) {}
+    virtual const light_source_settings * get_settings() const = 0;
+    virtual void apply_settings(const light_source_settings *settings) = 0;
+
     virtual void fill(infrastructure::array_view<graphics::color_rgb> &pixels) = 0;
   };
 }
