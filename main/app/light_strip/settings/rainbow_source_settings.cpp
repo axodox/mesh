@@ -17,7 +17,7 @@ namespace mesh::serialization::json
   {
     auto object = make_unique<json_object>();
     object->set_value("spatialFrequency", value.spatial_frequency);
-    object->set_value("spatialVelocity", value.angular_velocity);
+    object->set_value("angularVelocity", value.angular_velocity);
     return object;
   }
 
@@ -27,7 +27,7 @@ namespace mesh::serialization::json
     {
       auto object = static_cast<const json_object*>(json.get());
       object->get_value("spatialFrequency", value.spatial_frequency);
-      object->get_value("spatialVelocity", value.angular_velocity);
+      object->get_value("angularVelocity", value.angular_velocity);
       return true;
     }
     else

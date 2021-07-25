@@ -1,6 +1,6 @@
 <div class="property-row">
   <div class="property-name">Color</div>
   <div class="property-value">
-    <input type="color" [value]="source?.color || '#ffffff'" (change)="onColorChange($event)">
+    <input type="color" [value]="source?.color ?? '#ffffff'" (change)="onColorChange($event)">
   </div>
 </div>

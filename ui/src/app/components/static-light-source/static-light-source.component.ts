@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AnyLightSourceSettings, StaticSourceSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
@@ -8,7 +8,7 @@ import { LightStripService } from 'src/app/services/light-strip-service';
   styleUrls: ['./static-light-source.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StaticLightSourceComponent implements OnInit {
+export class StaticLightSourceComponent {
 
   @Input() source: AnyLightSourceSettings; 
 
@@ -16,9 +16,6 @@ export class StaticLightSourceComponent implements OnInit {
     private readonly changeDetector: ChangeDetectorRef,
     private readonly lightStripService : LightStripService
   ) { }
-
-  ngOnInit(): void {
-  }
 
   async onColorChange(event: any) {
     let sourceSettings = new StaticSourceSettings();

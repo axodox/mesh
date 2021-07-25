@@ -6,12 +6,14 @@ import { AppComponent } from './app.component';
 import { LightStripComponent } from './components/light-strip/light-strip.component';
 import { FormsModule } from '@angular/forms';
 import { StaticLightSourceComponent } from './components/static-light-source/static-light-source.component';
+import { RainbowLightSourceComponent } from './components/rainbow-light-source/rainbow-light-source.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LightStripComponent,
-    StaticLightSourceComponent
+    StaticLightSourceComponent,
+    RainbowLightSourceComponent
   ],
   imports: [
     BrowserModule,
