@@ -128,8 +128,9 @@ namespace mesh::app::light_strip
   {
     auto body = query.get_text();
     auto json = json_value::from_string(body);
+
     unique_ptr<light_source_settings> settings;
-    if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings))
+    if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, settings, { &_settings.static_source, &_settings.rainbow_source }))
     {
       _settings.source_type = settings->type();
       switch(settings->type())

@@ -2,6 +2,7 @@
 #include <cstring>
 #include <memory>
 #include <map>
+#include <initializer_list>
 #include <typeinfo>
 #include <typeindex>
 #include "json_value.hpp"
@@ -23,13 +24,26 @@ namespace mesh::serialization::json
   private:
 
     //Deserializers
-    typedef bool (*from_json_t)(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value);
-    typedef std::map<const char*, from_json_t, type_name_comparer> deserializer_map_t;
+    typedef bool (*from_json_t)(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value, const base_t* base_value);
+
+    struct json_deserializer_t
+    {
+      from_json_t from_json;
+      std::type_index index{typeid(void)};
+    };
+
+    typedef std::map<const char*, json_deserializer_t, type_name_comparer> deserializer_map_t;
 
     template<typename value_t>
-    static bool deserialize(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value)
+    static bool deserialize(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value, const base_t* base_value)
     {
       auto result = std::make_unique<value_t>();
+
+      if(base_value)
+      {
+        *result = static_cast<const value_t&>(*base_value);
+      }
+
       auto success = json_serializer<value_t>::from_json(json, *result);
       if (success)
       {
@@ -45,7 +59,7 @@ namespace mesh::serialization::json
     template<typename first_t, typename... other_t>
     static void build_deserializer_map(deserializer_map_t& deserializers)
     {
-      deserializers[nameof(first_t)] = &json_multi_serializer::deserialize<first_t>;
+      deserializers[nameof(first_t)] = json_deserializer_t{ &json_multi_serializer::deserialize<first_t>, std::type_index(typeid(first_t)) };
 
       if constexpr (sizeof...(other_t) > 0)
       {
@@ -130,7 +144,7 @@ namespace mesh::serialization::json
       return to_json(value.get());
     }
 
-    static bool from_json(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value)
+    static bool from_json(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value, std::initializer_list<const base_t*> base_values = {})
     {
       if (json && json->type() == json_type::object)
       {
@@ -139,7 +153,15 @@ namespace mesh::serialization::json
         auto it = _deserializers.find(type_name.c_str());
         if (it != _deserializers.end())
         {
-          return it->second(json, value);
+          for(auto base_value : base_values)
+          {
+            if(std::type_index(typeid(*base_value)) == it->second.index)
+            {
+              return it->second.from_json(json, value, base_value);
+            }
+          }
+
+          return it->second.from_json(json, value, nullptr);
         }
       }
 
