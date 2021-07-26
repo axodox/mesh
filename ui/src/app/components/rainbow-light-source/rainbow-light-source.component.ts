@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { AnyLightSourceSettings } from 'src/app/data/light-strip-settings';
+import { AnyLightSourceSettings, RainbowSourceSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
 @Component({
@@ -17,17 +17,19 @@ export class RainbowLightSourceComponent {
     private readonly lightStripService : LightStripService
   ) { }
 
-  async onSpatialFrequencyChange(event: any) {
+  onSpatialFrequencyChange(event: any) {
     this.source.spatialFrequency = parseFloat(event.target.value);
-    await this.applyChanges();
+    
+    let settings = new RainbowSourceSettings();
+    settings.spatialFrequency = this.source.spatialFrequency;
+    this.lightStripService.setLightSourceSettings(settings);
   }
 
-  async onAngularVelocityChange(event: any) {
+  onAngularVelocityChange(event: any) {
     this.source.angularVelocity = parseFloat(event.target.value);
-    await this.applyChanges();
-  }
 
-  private async applyChanges() {
-    await this.lightStripService.setLightSourceSettings(this.source).toPromise();
+    let settings = new RainbowSourceSettings();
+    settings.angularVelocity = this.source.angularVelocity;
+    this.lightStripService.setLightSourceSettings(settings);
   }
 }

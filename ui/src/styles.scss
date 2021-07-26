@@ -38,18 +38,25 @@ option {
 
 input[type=color] {
   background-color: transparent;
-  border: none;
   outline: none;
   border-radius: 100%;
+  border-style: solid;
+  border-color: $control-color;
+  border-width: 2px;
   width: 32px;
   height: 32px;
 
+  &:focus, &:hover {
+    transition: border-color $fade-duration;
+    border-color: $accent-color;
+  }
+
   &::-webkit-color-swatch-wrapper {
-    padding: 0; 
+    padding: 1px 0px;
   }
 
   &::-webkit-color-swatch {
-    border: none;
+    border-style: none;
     border-radius: 100%;
   }
 }
@@ -61,6 +68,7 @@ input[type=range] {
   margin: 10px 0;
   width: 100%;
   cursor: pointer;
+  max-width: 120px;
 
   &::-webkit-slider-runnable-track {
     -webkit-appearance: none;
@@ -83,7 +91,7 @@ input[type=range] {
     transition: border-color $fade-duration; 
   }
 
-  &:hover {
+  &:hover, &:focus {
 
     &::-webkit-slider-thumb {
       border-color: $accent-color;

@@ -15,9 +15,9 @@ export class Float3 {
 }
 
 export class BrightnessProcessorSettings {
-  gamma = new Float3(1.6, 1.5, 1.6);
-  brightness = 1;
-  maxBrightness = 0.7;
+  gamma : Float3 | undefined;
+  brightness : number | undefined;
+  maxBrightness : number | undefined;
 }
 
 export class DeviceSettings {
@@ -48,6 +48,6 @@ export class StaticSourceSettings extends LightSourceSettings {
 
 export class RainbowSourceSettings extends LightSourceSettings {
   $type = LightSourceType.Rainbow;
-  spatial_frequency = 1;
-  angular_velocity = Math.PI;
+  spatialFrequency : number | undefined;
+  angularVelocity : number | undefined;
 }

@@ -13,14 +13,12 @@ export class StaticLightSourceComponent {
   @Input() source: AnyLightSourceSettings; 
 
   constructor(
-    private readonly changeDetector: ChangeDetectorRef,
     private readonly lightStripService : LightStripService
   ) { }
 
-  async onColorChange(event: any) {
+  onColorChange(event: any) {
     let sourceSettings = new StaticSourceSettings();
     sourceSettings.color = event.target.value;
-    await this.lightStripService.setLightSourceSettings(sourceSettings).toPromise();
-    this.changeDetector.detectChanges();
+    this.lightStripService.setLightSourceSettings(sourceSettings);
   }
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AnyLightSourceSettings, NoneSourceSettings } from 'src/app/data/light-strip-settings';
+import { AnyLightSourceSettings, BrightnessProcessorSettings, NoneSourceSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
 @Component({
@@ -11,6 +11,7 @@ import { LightStripService } from 'src/app/services/light-strip-service';
 export class LightStripComponent implements OnInit {
 
   source: AnyLightSourceSettings;
+  brightnessProcessor = new BrightnessProcessorSettings();
 
   getType() {
     return this.source?.$type ?? "none";
@@ -22,15 +23,22 @@ export class LightStripComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.source = await this.lightStripService.getLightSourceSettings().toPromise();
+    this.source = await this.lightStripService.getLightSourceSettings();
+    this.brightnessProcessor = await this.lightStripService.getBrightnessSettings();
     this.changeDetector.detectChanges();
   }
 
   async onSourceChange(event: any) {
-    let sourceSettings = new NoneSourceSettings();
-    sourceSettings.$type = event.target.value;
-    await this.lightStripService.setLightSourceSettings(sourceSettings).toPromise();
-    this.source = await this.lightStripService.getLightSourceSettings().toPromise();
+    await this.lightStripService.switchLightSource(event.target.value);
+    this.source = await this.lightStripService.getLightSourceSettings();
     this.changeDetector.detectChanges();
+  }
+
+  onBrightnessChange(event: any) {    
+    this.brightnessProcessor.brightness = parseFloat(event.target.value);
+
+    let settings = new BrightnessProcessorSettings();
+    settings.brightness = this.brightnessProcessor.brightness;
+    this.lightStripService.setBrightnessSettings(settings);
   }
 }
