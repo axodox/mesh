@@ -26,19 +26,19 @@ export class DeviceSettings {
 }
 
 export enum LightSourceType {
-  None = "none",
+  Empty = "none",
   Static = "static",
   Rainbow = "rainbow"
 }
 
-export type AnyLightSourceSettings = NoneSourceSettings | StaticSourceSettings | RainbowSourceSettings | any
+export type AnyLightSourceSettings = EmptySourceSettings | StaticSourceSettings | RainbowSourceSettings | any
 
 export abstract class LightSourceSettings {
   $type: LightSourceType | undefined;
 }
 
-export class NoneSourceSettings extends LightSourceSettings {
-  $type = LightSourceType.None;
+export class EmptySourceSettings extends LightSourceSettings {
+  $type = LightSourceType.Empty;
 }
 
 export class StaticSourceSettings extends LightSourceSettings {

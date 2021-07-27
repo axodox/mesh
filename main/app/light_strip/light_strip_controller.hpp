@@ -13,6 +13,7 @@
 
 #include "app/light_strip/light_strip_context.hpp"
 #include "app/light_strip/sources/light_source.hpp"
+#include "app/light_strip/sources/empty_source.hpp"
 #include "app/light_strip/sources/static_source.hpp"
 #include "app/light_strip/sources/rainbow_source.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"

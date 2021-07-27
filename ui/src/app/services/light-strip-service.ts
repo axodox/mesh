@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { AnyLightSourceSettings, BrightnessProcessorSettings, DeviceSettings, LightSourceType, NoneSourceSettings } from "../data/light-strip-settings";
+import { AnyLightSourceSettings, BrightnessProcessorSettings, DeviceSettings, LightSourceType, EmptySourceSettings } from "../data/light-strip-settings";
 import { CallLimiter } from "../framework/call-limiter";
 
 @Injectable({
@@ -37,7 +37,7 @@ export class LightStripService {
   }
 
   switchLightSource(value: LightSourceType) {
-    let source = new NoneSourceSettings();
+    let source = new EmptySourceSettings();
     source.$type = value;
     return this.http.post<AnyLightSourceSettings>(this.urlBase + "mode", source).toPromise();
   }

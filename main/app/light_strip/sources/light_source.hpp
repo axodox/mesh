@@ -7,6 +7,7 @@ namespace mesh::app::light_strip::sources
   struct light_source_properties
   {
     bool steady_frame_source = true;
+    bool is_passthrough = false;
   };
 
   class light_source

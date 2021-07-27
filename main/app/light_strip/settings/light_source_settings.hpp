@@ -7,6 +7,7 @@ namespace mesh::app::light_strip::settings
 {
   enum class light_source_type
   {
+    empty_source,
     static_source,
     rainbow_source
   };
@@ -17,6 +18,7 @@ namespace mesh::app::light_strip::settings
     virtual light_source_type type() const = 0;
   };
 
+  struct empty_source_settings;
   struct static_source_settings;
   struct rainbow_source_settings;
 }
@@ -26,6 +28,7 @@ namespace mesh::serialization::json
   template <>
   struct json_serializer<std::unique_ptr<ns::light_source_settings>> : public json_multi_serializer<
     ns::light_source_settings,
+    ns::empty_source_settings,
     ns::static_source_settings,
     ns::rainbow_source_settings>
   { };

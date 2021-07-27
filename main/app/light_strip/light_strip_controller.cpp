@@ -53,23 +53,35 @@ namespace mesh::app::light_strip
     while(!_isDisposed)
     {
       auto now = steady_clock::now();
+      auto& source_properties = _source->properties();
 
+      //Resize buffer as needed
       if(lights.size() != settings.device.light_count)
       {
         lights.resize(settings.device.light_count);
         lights_view = lights;
       }
 
+      //Fill buffer
       {
         lock_guard<mutex> lock(_mutex);
         _source->fill(lights_view);
       }
 
-      _brightness_processor->process(lights_view);
+      //Apply brightness, gamma and dithering
+      if(!source_properties.is_passthrough)
+      {
+        _brightness_processor->process(lights_view);
+      }
+
+      //Write pixels
       _strip->push_pixels(lights_view);
 
+      //Save settings if needed
       save_settings();
-      if(_source->properties().steady_frame_source)
+
+      //Wait for next frame
+      if(source_properties.steady_frame_source)
       {
         this_thread::sleep_until(now + settings.device.interval);
       }
@@ -144,6 +156,9 @@ namespace mesh::app::light_strip
       settings.source_type = source_settings->type();
       switch(source_settings->type())
       {
+        case light_source_type::empty_source:
+          settings.empty_source = static_cast<const empty_source_settings&>(*source_settings);
+        break;
         case light_source_type::static_source:
           settings.static_source = static_cast<const static_source_settings&>(*source_settings);
         break;
@@ -200,6 +215,9 @@ namespace mesh::app::light_strip
       lock_guard<mutex> lock(_mutex);
       switch(settings.source_type)
       {
+        case light_source_type::empty_source:
+          _source = make_unique<empty_source>(*this);
+        break;
         case light_source_type::static_source:
           _source = make_unique<static_source>(*this);
         break;

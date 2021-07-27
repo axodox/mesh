@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AnyLightSourceSettings, BrightnessProcessorSettings, NoneSourceSettings } from 'src/app/data/light-strip-settings';
+import { AnyLightSourceSettings, BrightnessProcessorSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
 @Component({
