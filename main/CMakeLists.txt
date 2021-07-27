@@ -8,6 +8,9 @@ idf_component_register(SRCS
                         "infrastructure/logger.cpp"
                         "infrastructure/text.cpp"
 
+                        "threading/task.cpp"
+                        "threading/event.cpp"
+
                         "networking/mime_type.cpp"
                         "networking/http_query_method.cpp"
                         "networking/http_text_stream.cpp"

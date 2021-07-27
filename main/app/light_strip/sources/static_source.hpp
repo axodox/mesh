@@ -6,9 +6,10 @@ namespace mesh::app::light_strip::sources
   class static_source : public light_source
   {
   public:
-    using light_source::light_source;
+    static_source(light_strip_context& context);
 
     virtual settings::light_source_type type() const override;
+    virtual void on_settings_changed() override;
     virtual const settings::light_source_settings* get_settings() const override;
     virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;
   };

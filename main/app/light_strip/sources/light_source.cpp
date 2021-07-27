@@ -2,8 +2,12 @@
 
 namespace mesh::app::light_strip::sources
 {
-  light_source::light_source(const settings::light_strip_settings* settings)
+  light_source::light_source(light_strip_context& context) :
+    _context(context)
+  { }
+
+  const light_source_properties& light_source::properties() const
   {
-    _settings = settings;
+    return _properties;
   }
 }

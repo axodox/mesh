@@ -8,9 +8,10 @@
 
 #include "peripherals/led_strip.hpp"
 #include "networking/http_query.hpp"
-#include "infrastructure/task.hpp"
+#include "threading/task.hpp"
 #include "infrastructure/logger.hpp"
 
+#include "app/light_strip/light_strip_context.hpp"
 #include "app/light_strip/sources/light_source.hpp"
 #include "app/light_strip/sources/static_source.hpp"
 #include "app/light_strip/sources/rainbow_source.hpp"
@@ -19,7 +20,7 @@
 
 namespace mesh::app::light_strip
 {
-  class light_strip_controller
+  class light_strip_controller : public light_strip_context
   {
     static constexpr infrastructure::logger _logger{"light_strip_controller"};
     inline static const char * _root_uri = "/api/light_strip/*";
@@ -35,12 +36,11 @@ namespace mesh::app::light_strip
 
   private:    
     bool _isDisposed = false;
-    settings::light_strip_settings _settings;
     std::shared_ptr<peripherals::led_strip> _strip;
     std::unique_ptr<sources::light_source> _source;
     std::unique_ptr<processors::brightness_processor> _brightness_processor;
     std::mutex _mutex;
-    std::unique_ptr<infrastructure::task> _thread;    
+    std::unique_ptr<threading::task> _thread;    
     std::optional<std::chrono::steady_clock::time_point> _last_settings_change;
 
     void worker();
