@@ -19,6 +19,7 @@
 #include "app/angular_pages.hpp"
 #include "app/integrated_led_blinker.hpp"
 #include "app/light_strip/light_strip_controller.hpp"
+#include "app/light_strip/light_strip_http_interface.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -47,6 +48,7 @@ extern "C" void app_main()
     dependencies.resolve<angular_pages>();
     dependencies.resolve<integrated_led_blinker>();
     dependencies.resolve<light_strip_controller>();
+    dependencies.resolve<light_strip_http_interface>();
     
     //UI
     dependencies.resolve<http_server>()->start();

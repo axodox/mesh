@@ -25,16 +25,18 @@ namespace mesh::app::light_strip
   class light_strip_controller : public light_strip_context
   {
     static constexpr infrastructure::logger _logger{"light_strip_controller"};
-    inline static const char * _root_uri = "/api/light_strip/*";
-    inline static const char * _mode_uri = "/api/light_strip/mode";
-    inline static const char * _brightness_uri = "/api/light_strip/brightness";
-    inline static const char * _device_uri = "/api/light_strip/device";
     inline static const char * _settings_path = "/data/light_strip.json";
     inline static const std::chrono::seconds _settings_save_delay = std::chrono::seconds(10);
 
   public:
     light_strip_controller();
     ~light_strip_controller();
+
+    const sources::light_source* source() const;
+
+    void apply_brightness_settings();
+    void apply_source_settings();
+    void apply_device_settings();
 
   private:    
     bool _isDisposed = false;
@@ -46,12 +48,6 @@ namespace mesh::app::light_strip
     std::optional<std::chrono::steady_clock::time_point> _last_settings_change;
 
     void worker();
-    void on_get(networking::http_query &query);
-    void on_post(networking::http_query &query);
-
-    void on_post_brightness(networking::http_query &query);
-    void on_post_mode(networking::http_query &query);
-    void on_post_device(networking::http_query &query);
 
     void load_settings();
     void save_settings();

@@ -2,7 +2,6 @@
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "serialization/json.hpp"
-#include "networking/http_server.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
 #include "storage/file_io.hpp"
 
@@ -11,7 +10,6 @@ using namespace std::chrono;
 using namespace mesh::graphics;
 using namespace mesh::peripherals;
 using namespace mesh::infrastructure;
-using namespace mesh::networking;
 using namespace mesh::threading;
 using namespace mesh::storage;
 using namespace mesh::serialization::json;
@@ -24,15 +22,11 @@ namespace mesh::app::light_strip
   light_strip_controller::light_strip_controller() :
     _strip(dependencies.resolve<peripherals::led_strip>())
   {
+    _logger.log_message(log_severity::info, "Starting...");
     load_settings();
     _brightness_processor = make_unique<brightness_processor>(&settings);
     initialize_source();
     _thread = make_unique<task>([&] { worker(); }, task_affinity::core_0, task_priority::maximum, "light_strip");
-
-    _logger.log_message(log_severity::info, "Starting...");
-    auto server = dependencies.resolve<http_server>();
-    server->add_handler(http_query_method::get, _root_uri, [&](http_query &query) { on_get(query); });
-    server->add_handler(http_query_method::post, _root_uri, [&](http_query &query) { on_post(query); });
     _logger.log_message(log_severity::info, "Started.");
   }
 
@@ -44,6 +38,11 @@ namespace mesh::app::light_strip
     _isDisposed = true;
     _thread.reset();
     _logger.log_message(log_severity::info, "Stopped.");
+  }
+
+  const sources::light_source* light_strip_controller::source() const
+  {
+    return _source.get();
   }
 
   void light_strip_controller::worker()
@@ -92,97 +91,24 @@ namespace mesh::app::light_strip
     }
   }
 
-  void light_strip_controller::on_get(networking::http_query &query)
+  void light_strip_controller::apply_brightness_settings()
   {
-    if(strcmp(query.uri(), _mode_uri) == 0)
-    {
-      auto json = json_serializer<unique_ptr<light_source_settings>>::to_json(_source->get_settings());
-      query.return_text(json->to_string());
-    }
-    else if(strcmp(query.uri(), _brightness_uri) == 0)
-    {
-      auto json = json_serializer<brightness_processor_settings>::to_json(settings.brightness_processor);
-      query.return_text(json->to_string());
-    }
-    else if(strcmp(query.uri(), _device_uri) == 0)
-    {
-      auto json = json_serializer<device_settings>::to_json(settings.device);
-      query.return_text(json->to_string());
-    }
+    _brightness_processor->on_settings_changed();
+    frame_ready.set();
+    _last_settings_change = steady_clock::now();
+
+    _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
   }
 
-  void light_strip_controller::on_post(networking::http_query &query)
+  void light_strip_controller::apply_source_settings()
   {
-    if(strcmp(query.uri(), _mode_uri) == 0)
-    {
-      on_post_mode(query);
-    }
-    else if(strcmp(query.uri(), _brightness_uri) == 0)
-    {
-      on_post_brightness(query);
-    }
-    else if(strcmp(query.uri(), _device_uri) == 0)
-    {
-      on_post_device(query);
-    }
-
+    initialize_source();
     _last_settings_change = steady_clock::now();
   }
 
-  void light_strip_controller::on_post_brightness(networking::http_query &query)
+  void light_strip_controller::apply_device_settings()
   {
-    auto body = query.get_text();
-    auto json = json_value::from_string(body);
-    if(json_serializer<brightness_processor_settings>::from_json(json, settings.brightness_processor))
-    {
-      _brightness_processor->on_settings_changed();
-      frame_ready.set();
-      _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
-    }
-    else
-    {
-      _logger.log_message(log_severity::warning, "Failed to parse lighting brightness settings.");
-    }
-  }
-
-  void light_strip_controller::on_post_mode(networking::http_query &query)
-  {
-    auto body = query.get_text();
-    auto json = json_value::from_string(body);
-
-    unique_ptr<light_source_settings> source_settings;
-    if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, source_settings, { &settings.static_source, &settings.rainbow_source, &settings.udp_source }))
-    {
-      settings.source_type = source_settings->type();
-      switch(source_settings->type())
-      {
-        case light_source_type::empty_source:
-          settings.empty_source = static_cast<const empty_source_settings&>(*source_settings);
-        break;
-        case light_source_type::static_source:
-          settings.static_source = static_cast<const static_source_settings&>(*source_settings);
-        break;
-        case light_source_type::rainbow_source:
-          settings.rainbow_source = static_cast<const rainbow_source_settings&>(*source_settings);
-        break;
-        case light_source_type::udp_source:
-          settings.udp_source = static_cast<const udp_source_settings&>(*source_settings);
-        break;
-      }
-
-      initialize_source();
-    }
-    else
-    {
-      _logger.log_message(log_severity::warning, "Failed to parse lighting mode settings.");
-    }
-  }
-
-  void light_strip_controller::on_post_device(networking::http_query &query)
-  {
-    auto body = query.get_text();
-    auto json = json_value::from_string(body);
-    json_serializer<device_settings>::from_json(json, settings.device);
+    _last_settings_change = steady_clock::now();
   }
 
   void light_strip_controller::load_settings()

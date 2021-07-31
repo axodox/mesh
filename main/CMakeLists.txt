@@ -56,6 +56,7 @@ idf_component_register(SRCS
                         "app/light_strip/processors/color_processor.cpp"
                         "app/light_strip/processors/brightness_processor.cpp"
                         "app/light_strip/light_strip_controller.cpp"
+                        "app/light_strip/light_strip_http_interface.cpp"
 
                         "main.cpp"
                        INCLUDE_DIRS "."
