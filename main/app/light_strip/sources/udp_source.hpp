@@ -1,6 +1,7 @@
 #pragma once
 #include "light_source.hpp"
 #include "threading/task.hpp"
+#include "threading/event.hpp"
 #include "infrastructure/logger.hpp"
 
 namespace mesh::app::light_strip::sources
@@ -17,9 +18,9 @@ namespace mesh::app::light_strip::sources
     virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;
 
   private:
-    std::unique_ptr<threading::task> _thread;
     std::mutex _mutex;
     infrastructure::array_view<graphics::color_rgb> _buffer{};
+    threading::task _thread;
 
     void receive_data();
   };

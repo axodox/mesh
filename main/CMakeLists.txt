@@ -18,6 +18,7 @@ idf_component_register(SRCS
                         "networking/http_server.cpp"
                         "networking/ntp_client.cpp"
                         "networking/wifi.cpp"
+                        "networking/socket_handle.cpp"
 
                         "numerics/float3.cpp"
 

@@ -27,7 +27,6 @@ namespace mesh::serialization::json
     {
       auto object = static_cast<const json_object*>(json.get());
       object->get_value("port", value.port);
-      printf("port: %d\n", value.port);
       return true;
     }
     else

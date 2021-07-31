@@ -1,6 +1,6 @@
 <div class="property-row">
   <div class="property-name">Port</div>
   <div class="property-value">
-    <input type="number" [value]="source?.port ?? 8989" (change)="onPortChange($event)">
+    <input type="number" [value]="source?.port ?? 8989" min="1024" max="65535" (change)="onPortChange($event)">
   </div>
 </div>

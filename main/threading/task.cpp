@@ -1,17 +1,22 @@
 #include "task.hpp"
 
+using namespace mesh::infrastructure;
+
 namespace mesh::threading
 {
-  task::task(std::function<void()> &&action, task_affinity affinity, task_priority priority, const char *name)
+  task::task(std::function<void()> &&action, task_affinity affinity, task_priority priority, const char *name) :
+    _action(std::move(action)),
+    _task_handle(nullptr),
+    _name(name)
   {
-    _action = std::make_unique<std::function<void()>>(std::move(action));
+    _logger.log_message(log_severity::info, "Starting task %s...", _name);
     if (affinity == task_affinity::none)
     {
-      xTaskCreate(&task::worker, name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, _action.get(), uint32_t(priority), &_task_handle);
+      xTaskCreate(&task::worker, _name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, this, uint32_t(priority), &_task_handle);
     }
     else
     {
-      xTaskCreatePinnedToCore(&task::worker, name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, _action.get(), uint32_t(priority), &_task_handle, int(affinity) - 1);
+      xTaskCreatePinnedToCore(&task::worker, _name, CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT, this, uint32_t(priority), &_task_handle, int(affinity) - 1);
     }
   }
 
@@ -20,18 +25,30 @@ namespace mesh::threading
     close();
   }
 
+  bool task::is_running() const
+  {
+    return _task_handle != nullptr;
+  }
+
   void task::close()
   {
-    if (!_action)
-      return;
+    if (!_task_handle) return;
 
-    vTaskDelete(_task_handle);
-    _action.reset();
+    auto task_handle = _task_handle;
+    _task_handle = nullptr;
+    _action = nullptr;
+    _logger.log_message(log_severity::info, "Waiting for task %s to finish...", _name);
+    _finished.wait();    
+    vTaskDelete(task_handle);
+    _logger.log_message(log_severity::info, "Task %s closed.", _name);
   }
 
   void task::worker(void *data)
   {
-    auto action = static_cast<std::function<void()> *>(data);
-    (*action)();
+    auto that = static_cast<task*>(data);
+    _logger.log_message(log_severity::info, "Task %s started.", that->_name);
+    that->_action();
+    _logger.log_message(log_severity::info, "Task %s finished.", that->_name);
+    that->_finished.set();
   }
 }

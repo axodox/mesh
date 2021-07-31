@@ -27,7 +27,7 @@ namespace mesh::app::light_strip
     load_settings();
     _brightness_processor = make_unique<brightness_processor>(&settings);
     initialize_source();
-    _thread = make_unique<task>([&] { worker(); }, task_affinity::core_0, task_priority::maximum);
+    _thread = make_unique<task>([&] { worker(); }, task_affinity::core_0, task_priority::maximum, "light_strip");
 
     _logger.log_message(log_severity::info, "Starting...");
     auto server = dependencies.resolve<http_server>();
@@ -151,7 +151,7 @@ namespace mesh::app::light_strip
     auto json = json_value::from_string(body);
 
     unique_ptr<light_source_settings> source_settings;
-    if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, source_settings, { &settings.static_source, &settings.rainbow_source }))
+    if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, source_settings, { &settings.static_source, &settings.rainbow_source, &settings.udp_source }))
     {
       settings.source_type = source_settings->type();
       switch(source_settings->type())

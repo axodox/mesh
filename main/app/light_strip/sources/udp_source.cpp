@@ -1,6 +1,6 @@
 #include "udp_source.hpp"
 #include "infrastructure/bitwise_operations.hpp"
-#include "lwip/sockets.h"
+#include "networking/socket_handle.hpp"
 
 #include <chrono>
 #include <thread>
@@ -10,6 +10,7 @@ using namespace std::chrono;
 using namespace mesh::infrastructure;
 using namespace mesh::graphics;
 using namespace mesh::threading;
+using namespace mesh::networking;
 using namespace mesh::app::light_strip::settings;
 
 enum class light_data_flags : uint16_t
@@ -31,10 +32,10 @@ struct light_data_header
 namespace mesh::app::light_strip::sources
 {
   udp_source::udp_source(light_strip_context& context) :
-    light_source(context)
+    light_source(context),
+    _thread([=] { receive_data(); }, task_affinity::core_1, task_priority::normal, "udp_source")
   {
     _properties.steady_frame_source = false;
-    _thread = make_unique<task>([=] { receive_data(); }, task_affinity::core_1, task_priority::normal);
   }
 
   light_source_type udp_source::type() const
@@ -60,29 +61,28 @@ namespace mesh::app::light_strip::sources
   void udp_source::receive_data()
   {
     uint16_t port = ~0;
-    int socket_handle = 0;
+    socket_handle udp_socket = 0;
     steady_clock::time_point last_refresh{};
     uint32_t message_id = 0;
-    std::vector<uint8_t> buffer;
+    vector<uint8_t> buffer;
 
-    while(true)
+    while(_thread.is_running())
     {
       //Initialize socket
       if(port != _context.settings.udp_source.port)
       {
         port = _context.settings.udp_source.port;
-        if(socket_handle) closesocket(socket_handle);
 
         sockaddr_in address{};
         address.sin_len = sizeof(sockaddr_in);
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = IPADDR_ANY;
         address.sin_port = htons(port);
-        socket_handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+        udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
 
-        timeval timeout {0, 100000};
-        setsockopt(socket_handle, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-        bind(socket_handle, (sockaddr*)&address, sizeof(address));
+        timeval timeout {0, 100000}; //100ms
+        setsockopt(udp_socket.get(), SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+        bind(udp_socket.get(), (sockaddr*)&address, sizeof(address));
 
         _logger.log_message(log_severity::info, "Listening at: %d", port);
       }
@@ -100,14 +100,10 @@ namespace mesh::app::light_strip::sources
       }
 
       //Receive message
-      auto true_length = recv(socket_handle, buffer.data(), buffer.size() - 1, 0);
+      auto true_length = recv(udp_socket.get(), buffer.data(), buffer.size() - 1, 0);
 
       //Check header length
-      if(true_length < sizeof(light_data_header)) 
-      {
-        this_thread::sleep_for(milliseconds(8));
-        continue;
-      }
+      if(true_length < 0 || true_length < sizeof(light_data_header)) continue;
 
       //Check protocol id
       auto& header = *reinterpret_cast<const light_data_header*>(buffer.data());

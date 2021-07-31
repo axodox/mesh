@@ -6,7 +6,12 @@ namespace mesh::numerics
   {
     float x, y, z;
 
-    float3() = default;
+    constexpr float3() :
+      x(0),
+      y(0),
+      z(0)
+    { }
+
     constexpr float3(float v) :
       x(v),
       y(v),
