@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AnyLightSourceSettings, BrightnessProcessorSettings } from 'src/app/data/light-strip-settings';
+import { AnyLightSourceSettings, BrightnessProcessorSettings, DeviceSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
 @Component({
@@ -12,6 +12,7 @@ export class LightStripComponent implements OnInit {
 
   source: AnyLightSourceSettings;
   brightnessProcessor = new BrightnessProcessorSettings();
+  device = new DeviceSettings();
 
   getType() {
     return this.source?.$type ?? "none";
@@ -25,6 +26,7 @@ export class LightStripComponent implements OnInit {
   async ngOnInit() {
     this.source = await this.lightStripService.getLightSourceSettings();
     this.brightnessProcessor = await this.lightStripService.getBrightnessSettings();
+    this.device = await this.lightStripService.getDeviceSettings();
     this.changeDetector.detectChanges();
   }
 
@@ -40,5 +42,13 @@ export class LightStripComponent implements OnInit {
     let settings = new BrightnessProcessorSettings();
     settings.brightness = this.brightnessProcessor.brightness;
     this.lightStripService.setBrightnessSettings(settings);
+  }
+
+  onLightCountChange(event: any) {    
+    this.device.lightCount = parseFloat(event.target.value);
+
+    let settings = new DeviceSettings();
+    settings.lightCount = this.device.lightCount;
+    this.lightStripService.setDeviceSettings(settings);
   }
 }
