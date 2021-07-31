@@ -165,6 +165,9 @@ namespace mesh::app::light_strip
         case light_source_type::rainbow_source:
           settings.rainbow_source = static_cast<const rainbow_source_settings&>(*source_settings);
         break;
+        case light_source_type::udp_source:
+          settings.udp_source = static_cast<const udp_source_settings&>(*source_settings);
+        break;
       }
 
       initialize_source();
@@ -223,6 +226,9 @@ namespace mesh::app::light_strip
         break;
         case light_source_type::rainbow_source:
           _source = make_unique<rainbow_source>(*this);
+        break;
+        case light_source_type::udp_source:
+          _source = make_unique<udp_source>(*this);
         break;
       }
       frame_ready.set();

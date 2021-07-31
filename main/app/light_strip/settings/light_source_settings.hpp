@@ -9,7 +9,8 @@ namespace mesh::app::light_strip::settings
   {
     empty_source,
     static_source,
-    rainbow_source
+    rainbow_source,
+    udp_source
   };
 
   struct light_source_settings
@@ -21,6 +22,7 @@ namespace mesh::app::light_strip::settings
   struct empty_source_settings;
   struct static_source_settings;
   struct rainbow_source_settings;
+  struct udp_source_settings;
 }
 
 namespace mesh::serialization::json
@@ -30,7 +32,8 @@ namespace mesh::serialization::json
     ns::light_source_settings,
     ns::empty_source_settings,
     ns::static_source_settings,
-    ns::rainbow_source_settings>
+    ns::rainbow_source_settings,
+    ns::udp_source_settings>
   { };
 }
 

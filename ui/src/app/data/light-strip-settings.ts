@@ -28,10 +28,11 @@ export class DeviceSettings {
 export enum LightSourceType {
   Empty = "none",
   Static = "static",
-  Rainbow = "rainbow"
+  Rainbow = "rainbow",
+  Udp = "udp",
 }
 
-export type AnyLightSourceSettings = EmptySourceSettings | StaticSourceSettings | RainbowSourceSettings | any
+export type AnyLightSourceSettings = EmptySourceSettings | StaticSourceSettings | RainbowSourceSettings | UdpSourceSettings | any
 
 export abstract class LightSourceSettings {
   $type: LightSourceType | undefined;
@@ -50,4 +51,9 @@ export class RainbowSourceSettings extends LightSourceSettings {
   $type = LightSourceType.Rainbow;
   spatialFrequency : number | undefined;
   angularVelocity : number | undefined;
+}
+
+export class UdpSourceSettings extends LightSourceSettings {
+  $type = LightSourceType.Udp;
+  port : number | undefined;
 }

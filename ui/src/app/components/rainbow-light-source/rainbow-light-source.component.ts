@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { AnyLightSourceSettings, RainbowSourceSettings } from 'src/app/data/light-strip-settings';
 import { LightStripService } from 'src/app/services/light-strip-service';
 
@@ -13,7 +13,6 @@ export class RainbowLightSourceComponent {
   @Input() source: AnyLightSourceSettings; 
 
   constructor(
-    private readonly changeDetector: ChangeDetectorRef,
     private readonly lightStripService : LightStripService
   ) { }
 

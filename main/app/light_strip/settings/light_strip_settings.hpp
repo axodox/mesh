@@ -4,6 +4,7 @@
 #include "empty_source_settings.hpp"
 #include "static_source_settings.hpp"
 #include "rainbow_source_settings.hpp"
+#include "udp_source_settings.hpp"
 
 #define ns mesh::app::light_strip::settings
 
@@ -18,6 +19,7 @@ namespace mesh::app::light_strip::settings
     empty_source_settings empty_source{};
     static_source_settings static_source{};
     rainbow_source_settings rainbow_source{};
+    udp_source_settings udp_source{};
   };
 }
 
