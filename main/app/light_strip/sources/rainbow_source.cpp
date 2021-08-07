@@ -28,7 +28,7 @@ namespace mesh::app::light_strip::sources
     auto angle_step = 360.f / pixels.size() * _context.settings.rainbow_source.spatial_frequency;
     for(auto& pixel : pixels)
     {
-      pixel = color_hsl{ wrap(angle, 0.f, 360.f), 1.f, 0.1f };
+      pixel = color_hsl{ wrap(angle, 0.f, 360.f), 1.f, 0.5f };
       angle += angle_step;
     }
   }
