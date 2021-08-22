@@ -6,6 +6,7 @@
 using namespace std;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
+using namespace mesh::events;
 using namespace mesh::serialization::json;
 using namespace mesh::app::light_strip::settings;
 
@@ -13,11 +14,20 @@ namespace mesh::app::light_strip
 {
   light_strip_http_interface::light_strip_http_interface()
   {
+    _message_serializer.add_type<brightness_processor_settings>(_brightness_key, &_controller->settings.brightness_processor);
+    _message_serializer.add_multi_type<light_source_settings>(_source_key, {
+      &_controller->settings.static_source, 
+      &_controller->settings.rainbow_source, 
+      &_controller->settings.udp_source
+     });
+    _message_serializer.add_type<device_settings>(_device_key, &_controller->settings.device);
+
     _controller = dependencies.resolve<light_strip_controller>();
 
     auto server = dependencies.resolve<http_server>();
     server->add_handler(http_query_method::get, _root_uri, [&](http_query &query) { on_get(query); });
     server->add_handler(http_query_method::post, _root_uri, [&](http_query &query) { on_post(query); });
+    server->add_socket(_socket_uri, [&](http_socket& socket) { on_socket(socket); });
     _logger.log_message(log_severity::info, "Enabled.");
   }
 
@@ -81,24 +91,7 @@ namespace mesh::app::light_strip
       &_controller->settings.rainbow_source, 
       &_controller->settings.udp_source }))
     {
-      _controller->settings.source_type = source_settings->type();
-      switch(source_settings->type())
-      {
-        case light_source_type::empty_source:
-          _controller->settings.empty_source = static_cast<const empty_source_settings&>(*source_settings);
-        break;
-        case light_source_type::static_source:
-          _controller->settings.static_source = static_cast<const static_source_settings&>(*source_settings);
-        break;
-        case light_source_type::rainbow_source:
-          _controller->settings.rainbow_source = static_cast<const rainbow_source_settings&>(*source_settings);
-        break;
-        case light_source_type::udp_source:
-          _controller->settings.udp_source = static_cast<const udp_source_settings&>(*source_settings);
-        break;
-      }
-
-      _controller->apply_source_settings();
+      apply_source_settings(source_settings.get());
     }
     else
     {
@@ -112,5 +105,67 @@ namespace mesh::app::light_strip
     auto json = json_value::from_string(body);
     json_serializer<device_settings>::from_json(json, _controller->settings.device);
     _controller->apply_device_settings();
+  }
+
+  void light_strip_http_interface::on_socket(networking::http_socket &socket)
+  {
+    socket.message_received(no_revoke, member_func(this, &light_strip_http_interface::on_socket_received));
+    socket.closing(no_revoke, member_func(this, &light_strip_http_interface::on_socket_closing));
+
+    lock_guard<mutex> lock(_mutex);
+    _sockets.push_back(&socket);
+  }
+
+  void light_strip_http_interface::on_socket_received(networking::http_socket* socket, const char* message)
+  {
+    auto json = json_value::from_string(message);
+
+    const char* type = nullptr;
+    auto value = _message_serializer.from_json(json, type);
+    
+    if(!value) return;
+
+    if(type == _brightness_key)
+    {
+      _controller->settings.brightness_processor = *value.get<brightness_processor_settings>();
+      _controller->apply_brightness_settings();
+    }
+    else if(type == _source_key)
+    {
+      apply_source_settings(value.get<unique_ptr<light_source_settings>>()->get());
+    }
+    else if(type == _device_key)
+    {
+      _controller->settings.device = *value.get<device_settings>();
+      _controller->apply_device_settings();
+    }
+  }
+
+  void light_strip_http_interface::on_socket_closing(networking::http_socket* socket)
+  {
+    lock_guard<mutex> lock(_mutex);
+    _sockets.remove(socket);
+  }
+
+  void light_strip_http_interface::apply_source_settings(const settings::light_source_settings* source_settings)
+  {
+    _controller->settings.source_type = source_settings->type();
+    switch(source_settings->type())
+    {
+      case light_source_type::empty_source:
+        _controller->settings.empty_source = static_cast<const empty_source_settings&>(*source_settings);
+      break;
+      case light_source_type::static_source:
+        _controller->settings.static_source = static_cast<const static_source_settings&>(*source_settings);
+      break;
+      case light_source_type::rainbow_source:
+        _controller->settings.rainbow_source = static_cast<const rainbow_source_settings&>(*source_settings);
+      break;
+      case light_source_type::udp_source:
+        _controller->settings.udp_source = static_cast<const udp_source_settings&>(*source_settings);
+      break;
+    }
+
+    _controller->apply_source_settings();
   }
 }

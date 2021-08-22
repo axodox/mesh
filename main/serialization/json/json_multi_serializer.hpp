@@ -1,21 +1,15 @@
 #pragma once
-#include <cstring>
 #include <memory>
 #include <map>
 #include <initializer_list>
 #include <typeinfo>
 #include <typeindex>
 #include "json_value.hpp"
+#include "infrastructure/text.hpp"
 #include "infrastructure/traits.hpp"
 
 namespace mesh::serialization::json
 {
-  struct type_name_comparer {
-    bool operator()(const char* a, const char* b) const {
-      return strcmp(a, b) < 0;
-    }
-  };
-
   inline const char* type_property_name = "$type";
 
   template<typename base_t, typename... derived_t>
@@ -32,7 +26,7 @@ namespace mesh::serialization::json
       std::type_index index{typeid(void)};
     };
 
-    typedef std::map<const char*, json_deserializer_t, type_name_comparer> deserializer_map_t;
+    typedef std::map<const char*, json_deserializer_t, infrastructure::cstring_comparer> deserializer_map_t;
 
     template<typename value_t>
     static bool deserialize(const std::unique_ptr<json_value>& json, std::unique_ptr<base_t>& value, const base_t* base_value)

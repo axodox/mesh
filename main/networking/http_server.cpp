@@ -33,13 +33,14 @@ namespace mesh::networking
     config.max_uri_handlers = uint16_t(_query_handlers.size()) + !_files.empty() + uint16_t(_socket_handlers.size());
     config.lru_purge_enable = true;
     config.core_id = 1;
-    config.global_transport_ctx = this;
+    config.global_user_ctx = this;
     config.global_user_ctx_free_fn = &empty_free;
     check_result(httpd_start(&_server, &config));
 
     //Query handlers
     for (auto &handler : _query_handlers)
     {
+      _logger.log_message(log_severity::info, "Adding query handler: %s %s...", to_string(handler.method), handler.uri);
       httpd_uri_t uri_registration = {
         .uri = handler.uri,
         .method = (httpd_method_t)handler.method,
@@ -50,30 +51,13 @@ namespace mesh::networking
         .supported_subprotocol = nullptr
       };
       check_result(httpd_register_uri_handler(_server, &uri_registration));
-
-      _logger.log_message(log_severity::info, "Added query handler: %s %s", to_string(handler.method), handler.uri);
-    }
-
-    //Serve static files
-    if (!_files.empty())
-    {
-      httpd_uri_t uri_registration = {
-        .uri = "/*",
-        .method = HTTP_GET,
-        .handler = http_server::http_static_file_handler,
-        .user_ctx = this,
-        .is_websocket = false,
-        .handle_ws_control_frames = false,
-        .supported_subprotocol = nullptr
-      };
-      check_result(httpd_register_uri_handler(_server, &uri_registration));
-
-      _logger.log_message(log_severity::info, "Added static files handler.");
     }
 
     //Socket handlers
     for (auto &handler : _socket_handlers)
     {
+      _logger.log_message(log_severity::info, "Adding socket handler: %s...", handler.uri);
+
       httpd_uri_t uri_registration = {
         .uri = handler.uri,
         .method = (httpd_method_t)http_query_method::get,
@@ -84,8 +68,23 @@ namespace mesh::networking
         .supported_subprotocol = handler.protocol
       };
       check_result(httpd_register_uri_handler(_server, &uri_registration));
+    }
 
-      _logger.log_message(log_severity::info, "Added socket handler: %s", handler.uri);
+    //Serve static files
+    if (!_files.empty())
+    {
+      _logger.log_message(log_severity::info, "Adding static files handler...");
+
+      httpd_uri_t uri_registration = {
+        .uri = "/*",
+        .method = HTTP_GET,
+        .handler = http_server::http_static_file_handler,
+        .user_ctx = this,
+        .is_websocket = false,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = nullptr
+      };
+      check_result(httpd_register_uri_handler(_server, &uri_registration));
     }
 
     _logger.log_message(log_severity::info, "Started.");
@@ -166,7 +165,7 @@ namespace mesh::networking
     auto handler_data = (http_query_handler_data *)request->user_ctx;
     http_query query(request);
 
-    _logger.log_message(log_severity::info, "Serving %s %s...", to_string(query.method()), query.uri());
+    _logger.log_message(log_severity::info, "Serving query %s %s...", to_string(query.method()), query.uri());
 
     try
     {
@@ -212,19 +211,38 @@ namespace mesh::networking
 
   esp_err_t http_server::http_socket_handler(httpd_req_t *request)
   {
+    _logger.log_message(log_severity::info, "Serving socket %s...", request->uri);
+
     auto server = static_cast<http_server*>(httpd_get_global_user_ctx(request->handle));
     auto handler_data = static_cast<http_socket_handler_data*>(request->user_ctx);
+    
     if(!request->sess_ctx)
     {
       server->_sockets.emplace_back(server, request);
       request->sess_ctx = &server->_sockets.back();
       request->free_ctx = &http_server::close_socket;
-
-      handler_data->handler(server->_sockets.back());
+      
+      try
+      {
+        handler_data->handler(server->_sockets.back());
+      }
+      catch(const std::exception& e)
+      {
+        _logger.log_message(log_severity::error, "Socket creation for %s failed. Reason: %s", handler_data->uri, e.what());
+        return ESP_FAIL;
+      }
     }
 
-    auto socket = static_cast<http_socket*>(request->sess_ctx);
-    socket->on_receive(request);
+    try
+    {
+      auto socket = static_cast<http_socket*>(request->sess_ctx);
+      socket->on_receive(request);
+    }
+    catch(const std::exception& e)
+    {
+      _logger.log_message(log_severity::error, "Socket receive for %s failed. Reason: %s", request->uri, e.what());
+      return ESP_FAIL;
+    }
 
     return ESP_OK;
   }

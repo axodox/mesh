@@ -7,6 +7,8 @@ using namespace std;
 
 namespace mesh::networking
 {
+  thread_local httpd_req_t* _request;
+
   http_socket::http_socket(http_server* server, httpd_req_t* request) :
     message_received(_events),
     closing(_events),
@@ -34,9 +36,7 @@ namespace mesh::networking
   void http_socket::on_receive(httpd_req_t* request)
   {
     //begin
-    lock_guard<recursive_mutex> lock(_mutex);
     _request = request;
-    _receive_thread_id = this_thread::get_id();
 
     //receive
     httpd_ws_frame_t frame;
@@ -54,7 +54,6 @@ namespace mesh::networking
     }
 
     //end
-    _receive_thread_id = {};
     _request = nullptr;
   }
 
@@ -66,8 +65,7 @@ namespace mesh::networking
     frame.len = strlen(message);
     frame.payload = reinterpret_cast<uint8_t*>(const_cast<char*>(message));
 
-    lock_guard<recursive_mutex> lock(_mutex);
-    if(_receive_thread_id == this_thread::get_id())
+    if(_request)
     {
       //send sync      
       check_result(httpd_ws_send_frame(_request, &frame));

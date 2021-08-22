@@ -7,7 +7,6 @@
 #include <optional>
 
 #include "peripherals/led_strip.hpp"
-#include "networking/http_query.hpp"
 #include "threading/task.hpp"
 #include "infrastructure/logger.hpp"
 

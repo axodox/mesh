@@ -38,6 +38,7 @@ idf_component_register(SRCS
                         "serialization/json/json_string.cpp"
                         "serialization/json/json_array.cpp"
                         "serialization/json/json_object.cpp"
+                        "serialization/json/json_container_serializer.cpp"
 
                         "app/angular_pages.cpp"
                         "app/integrated_led_blinker.cpp"

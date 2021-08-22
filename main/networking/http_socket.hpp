@@ -1,7 +1,4 @@
 #pragma once
-
-#include <mutex>
-#include <thread>
 #include <string>
 
 #include "esp_http_server.h"
@@ -30,9 +27,6 @@ namespace mesh::networking
 
   private:
     http_server* _server;
-    httpd_req_t* _request;
-    std::recursive_mutex _mutex;
-    std::thread::id _receive_thread_id = {};
     httpd_handle_t _server_handle;
     int _socket_descriptor = 0;
 
