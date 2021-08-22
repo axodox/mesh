@@ -15,6 +15,7 @@ idf_component_register(SRCS
                         "networking/http_query_method.cpp"
                         "networking/http_text_stream.cpp"
                         "networking/http_query.cpp"
+                        "networking/http_socket.cpp"
                         "networking/http_server.cpp"
                         "networking/ntp_client.cpp"
                         "networking/wifi.cpp"

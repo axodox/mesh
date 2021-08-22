@@ -43,6 +43,7 @@ namespace mesh::events
       _event_handler_collection = std::move(other._event_handler_collection);
       _token = other._token;
       other._token = event_handler_collection_base::token_t{};
+      return *this;
     }
 
     event_subscription(event_subscription&& other) noexcept
@@ -114,6 +115,49 @@ namespace mesh::events
   inline constexpr no_revoke_t no_revoke{};
 
   template<typename... TArgs>
+  class event_publisher;
+
+  class event_owner
+  {
+  private:
+    static inline size_t _next_id = 1;
+    size_t _id;
+    
+  public:
+    event_owner() noexcept :
+      _id(_next_id++)
+    { }
+
+    event_owner& operator=(event_owner&& other) noexcept
+    {
+      _id = other._id;
+      other._id = size_t{};
+      return *this;
+    }
+
+    event_owner(event_owner&& other) noexcept
+    {
+      *this = std::move(other);
+    }
+
+    event_owner(const event_owner&) = delete;
+    event_owner& operator=(const event_owner&) = delete;
+
+    template<typename... TArgs, typename TEvent = event_publisher<TArgs...>>
+    void raise(TEvent& event, TArgs... args) const;
+
+    bool is_valid() const noexcept
+    {
+      return _id != size_t{};
+    }
+
+    operator size_t() const noexcept
+    {
+      return _id;
+    }
+  };
+
+  template<typename... TArgs>
   class event_publisher
   {
     friend class event_owner;
@@ -121,16 +165,6 @@ namespace mesh::events
   private:
     size_t _owner_id;
     std::shared_ptr<event_handler_collection<TArgs...>> _handlers;
-
-    void raise(const event_owner& owner, TArgs... args)
-    {
-      if (owner != _owner_id)
-      {
-        throw std::exception("The specified event owner does not own this event.");
-      }
-
-      _handlers->invoke(std::forward<TArgs>(args)...);
-    }
 
   public:
     event_publisher(event_publisher&&) = default;
@@ -144,7 +178,7 @@ namespace mesh::events
       _handlers(std::make_shared<event_handler_collection<TArgs...>>())
     { }
 
-    [[nodiscard("Do not discard event subscription.")]]
+    [[nodiscard]]
     event_subscription subscribe(std::function<void(TArgs...)>&& handler) noexcept
     {
       return { _handlers, _handlers->add(std::move(handler)) };
@@ -155,7 +189,7 @@ namespace mesh::events
       _handlers->add(std::move(handler));
     }
 
-    [[nodiscard("Do not discard event subscription.")]]
+    [[nodiscard]]
     event_subscription operator()(std::function<void(TArgs...)>&& handler) noexcept
     {
       return subscribe(std::move(handler));
@@ -164,6 +198,16 @@ namespace mesh::events
     void operator()(no_revoke_t, std::function<void(TArgs...)>&& handler) noexcept
     {
       subscribe(no_revoke, std::move(handler));
+    }
+
+    void raise(const event_owner& owner, TArgs... args)
+    {
+      if (owner != _owner_id)
+      {
+        throw std::logic_error("The specified event owner does not own this event.");
+      }
+
+      _handlers->invoke(std::forward<TArgs>(args)...);
     }
 
     std::tuple<TArgs...> wait(std::chrono::duration<uint32_t, std::milli> timeout)
@@ -193,45 +237,9 @@ namespace mesh::events
     }
   };
 
-  class event_owner
+  template<typename... TArgs, typename TEvent = event_publisher<TArgs...>>
+  void event_owner::raise(TEvent& event, TArgs... args) const
   {
-  private:
-    static inline size_t _next_id = 1;
-    size_t _id;
-    
-  public:
-    event_owner() noexcept :
-      _id(_next_id++)
-    { }
-
-    event_owner& operator=(event_owner&& other) noexcept
-    {
-      _id = other._id;
-      other._id = size_t{};
-    }
-
-    event_owner(event_owner&& other) noexcept
-    {
-      *this = std::move(other);
-    }
-
-    event_owner(const event_owner&) = delete;
-    event_owner& operator=(const event_owner&) = delete;
-
-    template<typename... TArgs, typename TEvent = event_publisher<TArgs...>>
-    void raise(TEvent& event, TArgs... args) const
-    {
-      event.raise(*this, std::forward<TArgs>(args)...);
-    }
-
-    bool is_valid() const noexcept
-    {
-      return _id != size_t{};
-    }
-
-    operator size_t() const noexcept
-    {
-      return _id;
-    }
-  };
+    event.raise(*this, std::forward<TArgs>(args)...);
+  }
 }

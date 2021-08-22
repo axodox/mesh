@@ -2,6 +2,7 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <list>
 
 #include "esp_http_server.h"
 #include "esp_http_client.h"
@@ -10,6 +11,7 @@
 #include "infrastructure/logger.hpp"
 #include "mime_type.hpp"
 #include "http_query.hpp"
+#include "http_socket.hpp"
 
 namespace mesh::networking
 {
@@ -24,13 +26,14 @@ namespace mesh::networking
   {
     static constexpr infrastructure::logger _logger{"http_server"};
 
-    typedef std::function<void(http_query&)> http_handler_t;
+    typedef std::function<void(http_query&)> http_query_handler_t;
+    typedef std::function<void(http_socket&)> http_socket_handler_t;
 
-    struct http_handler_data
+    struct http_query_handler_data
     {
       http_query_method method;
       const char* uri;
-      http_handler_t handler;
+      http_query_handler_t handler;
     };
 
     struct http_static_file
@@ -41,6 +44,13 @@ namespace mesh::networking
       http_static_file_options options;
     };
 
+    struct http_socket_handler_data
+    {
+      const char* uri;
+      const char* protocol;
+      http_socket_handler_t handler;
+    };
+
   public:
     http_server() = default;
     ~http_server();
@@ -48,16 +58,20 @@ namespace mesh::networking
     void start();
     void stop();
 
-    void add_handler(http_query_method method, const char* uri, const http_handler_t& handler);
-
+    void add_handler(http_query_method method, const char* uri, const http_query_handler_t& handler);
     void add_static_file(const char * uri, const char* mime_type, const infrastructure::array_view<uint8_t>& data, http_static_file_options options = {});
+    void add_socket(const char* uri, const http_socket_handler_t& handler, const char* protocol = nullptr);
 
   private:
     httpd_handle_t _server = nullptr;
-    std::vector<http_handler_data> _handlers;
+    std::vector<http_query_handler_data> _query_handlers;
     std::vector<http_static_file> _files;
+    std::vector<http_socket_handler_data> _socket_handlers;
+    std::list<http_socket> _sockets;
 
     static esp_err_t http_query_handler(httpd_req_t *request);
     static esp_err_t http_static_file_handler(httpd_req_t *request);
+    static esp_err_t http_socket_handler(httpd_req_t *request);
+    static void close_socket(void* context);
   };
 }
