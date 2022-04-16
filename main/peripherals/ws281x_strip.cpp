@@ -1,4 +1,4 @@
-#include "ws2812_strip.hpp"
+#include "ws281x_strip.hpp"
 #include "driver/rmt.h"
 #include "infrastructure/error.hpp"
 
@@ -8,7 +8,7 @@ using namespace mesh::graphics;
 
 namespace mesh::peripherals
 {
-  ws2812_strip::ws2812_strip(uint8_t pin, rmt_channel_t channel) :
+  ws281x_strip::ws281x_strip(ws281x_variant variant, uint8_t pin, rmt_channel_t channel) :
     _channel(channel)
   {
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(gpio_num_t(pin), _channel);
@@ -20,26 +20,37 @@ namespace mesh::peripherals
     check_result(rmt_get_counter_clock(_channel, &clock_frequency_hz));
 
     float clock_frequency_ghz = float(clock_frequency_hz) / 1e9;
-    _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 400); //.4us
-    _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 850); //.85us
-    _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 800); //.8us
-    _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 450); //.45us
+    switch(variant)
+    {
+    case ws281x_variant::ws2812:
+      _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 400); //.4us
+      _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 850); //.85us
+      _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 800); //.8us
+      _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 450); //.45us
+      break;
+    case ws281x_variant::ws2815:
+      _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 300); //.3us
+      _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 1090); //1.09us
+      _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 1090); //1.09us
+      _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 320); //.32us
+      break;
+    }    
 
-    check_result(rmt_translator_init(_channel, &ws2812_strip::convert_data));
+    check_result(rmt_translator_init(_channel, &ws281x_strip::convert_data));
     check_result(rmt_translator_set_context(_channel, this));
   }
 
-  ws2812_strip::~ws2812_strip()
+  ws281x_strip::~ws281x_strip()
   {
     check_result(rmt_driver_uninstall(_channel));
   }
 
-  void ws2812_strip::push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels)
+  void ws281x_strip::push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels)
   {
     check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size() * 3, true));
   }
 
-  void ws2812_strip::convert_data(
+  void ws281x_strip::convert_data(
     const void* source_start, 
     rmt_item32_t* destination_start, 
     size_t source_size, 
@@ -47,7 +58,7 @@ namespace mesh::peripherals
     size_t* source_advanced_by, 
     size_t* destination_advanced_by)
   {
-    ws2812_strip* that;
+    ws281x_strip* that;
     check_result(rmt_translator_get_context(destination_advanced_by, reinterpret_cast<void**>(&that)));
 
     if(!source_start || !destination_start)

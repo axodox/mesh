@@ -12,7 +12,7 @@
 #include "networking/ntp_client.hpp"
 
 #include "peripherals/led_strip.hpp"
-#include "peripherals/ws2812_strip.hpp"
+#include "peripherals/ws281x_strip.hpp"
 
 #include "storage/spiffs.hpp"
 
@@ -35,7 +35,7 @@ extern "C" void app_main()
 {
   log_message(log_severity::info, "Starting...");
   dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection> { return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); });
-  dependencies.add<led_strip>(dependency_lifetime::singleton, []() -> unique_ptr<led_strip> { return make_unique<ws2812_strip>(); });
+  dependencies.add<led_strip>(dependency_lifetime::singleton, []() -> unique_ptr<led_strip> { return make_unique<ws281x_strip>(); });
 
   try
   {

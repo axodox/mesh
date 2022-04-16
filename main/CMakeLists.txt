@@ -24,7 +24,7 @@ idf_component_register(SRCS
                         "numerics/float3.cpp"
 
                         "peripherals/integrated_led.cpp"
-                        "peripherals/ws2812_strip.cpp"
+                        "peripherals/ws281x_strip.cpp"
 
                         "storage/embedded.cpp"
                         "storage/nvs.cpp"
