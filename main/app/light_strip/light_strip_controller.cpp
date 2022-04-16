@@ -24,6 +24,7 @@ namespace mesh::app::light_strip
   {
     _logger.log_message(log_severity::info, "Starting...");
     load_settings();
+    settings.source_type = light_source_type::static_source;
     _brightness_processor = make_unique<brightness_processor>(&settings);
     initialize_source();
     _thread = make_unique<task>([&] { worker(); }, task_affinity::core_0, task_priority::maximum, "light_strip");
@@ -144,17 +145,20 @@ namespace mesh::app::light_strip
       lock_guard<mutex> lock(_mutex);
       switch(settings.source_type)
       {
-        case light_source_type::empty_source:
-          _source = make_unique<empty_source>(*this);
+      case light_source_type::empty_source:
+        _source = make_unique<empty_source>(*this);
         break;
-        case light_source_type::static_source:
-          _source = make_unique<static_source>(*this);
+      case light_source_type::static_source:
+        _source = make_unique<static_source>(*this);
         break;
-        case light_source_type::rainbow_source:
-          _source = make_unique<rainbow_source>(*this);
+      case light_source_type::rainbow_source:
+        _source = make_unique<rainbow_source>(*this);
         break;
-        case light_source_type::udp_source:
-          _source = make_unique<udp_source>(*this);
+      case light_source_type::udp_source:
+        _source = make_unique<udp_source>(*this);
+        break;
+      case light_source_type::uart_source:
+        _source = make_unique<uart_source>(*this);
         break;
       }
       frame_ready.set();

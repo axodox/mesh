@@ -84,17 +84,20 @@ namespace mesh::app::light_strip
       _controller->settings.source_type = source_settings->type();
       switch(source_settings->type())
       {
-        case light_source_type::empty_source:
-          _controller->settings.empty_source = static_cast<const empty_source_settings&>(*source_settings);
+      case light_source_type::empty_source:
+        _controller->settings.empty_source = static_cast<const empty_source_settings&>(*source_settings);
         break;
-        case light_source_type::static_source:
-          _controller->settings.static_source = static_cast<const static_source_settings&>(*source_settings);
+      case light_source_type::static_source:
+        _controller->settings.static_source = static_cast<const static_source_settings&>(*source_settings);
         break;
-        case light_source_type::rainbow_source:
-          _controller->settings.rainbow_source = static_cast<const rainbow_source_settings&>(*source_settings);
+      case light_source_type::rainbow_source:
+        _controller->settings.rainbow_source = static_cast<const rainbow_source_settings&>(*source_settings);
         break;
-        case light_source_type::udp_source:
-          _controller->settings.udp_source = static_cast<const udp_source_settings&>(*source_settings);
+      case light_source_type::udp_source:
+        _controller->settings.udp_source = static_cast<const udp_source_settings&>(*source_settings);
+        break;
+      case light_source_type::uart_source:
+        _controller->settings.uart_source = static_cast<const uart_source_settings&>(*source_settings);
         break;
       }
 
