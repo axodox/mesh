@@ -18,13 +18,12 @@ using namespace mesh::app::light_strip::settings;
 
 namespace mesh::app::light_strip::sources
 {
-  integrated_led led{};
-
   uart_source::uart_source(light_strip_context &context) : 
     light_source(context),
     _thread([=] { receive_data(); }, task_affinity::core_1, task_priority::normal, "uart_source")
   {
     _properties.steady_frame_source = false;
+    _properties.is_passthrough = true;
   }
 
   light_source_type uart_source::type() const
@@ -63,28 +62,25 @@ namespace mesh::app::light_strip::sources
       }
 
       auto led_count = read_header(stream);
-      led.state(led_count > 0);
-
-      if (led_count != buffer.size())
-      {
-        lock_guard lock(_mutex);
-        buffer.resize(led_count);
-
-        _buffer = buffer;
-      }
-
+      
       if(led_count > 0)
       {
+        if (led_count != buffer.size())
+        {
+          lock_guard lock(_mutex);
+          buffer.resize(led_count);
+
+          _buffer = buffer;
+        }
+
         stream.read(_buffer);
-        _context.frame_ready.set();
-      }
-      else
-      {
-        this_thread::sleep_for(100ms);
+
+        auto closer = stream.read<uint8_t>();
+        stream.flush();
+
+        if(closer == 0xAA) _context.frame_ready.set();
       }
     }
-
-    led.state(false);
   }
 
   uint32_t uart_source::read_header(storage::stream &stream)

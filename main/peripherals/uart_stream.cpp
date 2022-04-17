@@ -105,7 +105,7 @@ namespace mesh::peripherals
       }
       else
       {
-        auto result = uart_read_bytes(_port, bytes, length, 5);
+        auto result = uart_read_bytes(_port, bytes, length, 50);
         if(result < 0) check_result(result);
 
         received_bytes += result;

@@ -12,7 +12,7 @@ namespace mesh::peripherals
     _channel(channel)
   {
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(gpio_num_t(pin), _channel);
-    config.clk_div = 2;
+    config.clk_div = 1;    
     check_result(rmt_config(&config));
     check_result(rmt_driver_install(_channel, 0, 0));
 
@@ -27,12 +27,14 @@ namespace mesh::peripherals
       _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 850); //.85us
       _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 800); //.8us
       _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 450); //.45us
+      _signal_reset_ticks = uint32_t(clock_frequency_ghz * 50000);
       break;
     case ws281x_variant::ws2815:
-      _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 300); //.3us
-      _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 1090); //1.09us
-      _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 1090); //1.09us
-      _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 320); //.32us
+      _signal_zero_high_ticks = uint32_t(clock_frequency_ghz * 250); //.3us
+      _signal_zero_low_ticks = uint32_t(clock_frequency_ghz * 1100); //1.09us
+      _signal_one_high_ticks = uint32_t(clock_frequency_ghz * 1100); //1.09us
+      _signal_one_low_ticks = uint32_t(clock_frequency_ghz * 250); //.32us
+      _signal_reset_ticks = uint32_t(clock_frequency_ghz * 350000);
       break;
     }    
 
@@ -48,6 +50,9 @@ namespace mesh::peripherals
   void ws281x_strip::push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels)
   {
     check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size() * 3, true));
+    
+    const rmt_item32_t resetbit = {{{ 0, 1, _signal_reset_ticks, 0 }}};
+    rmt_write_items(_channel, &resetbit, 1, true);
   }
 
   void ws281x_strip::convert_data(

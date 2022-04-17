@@ -26,6 +26,7 @@ namespace mesh::peripherals
     uint32_t _signal_zero_low_ticks;
     uint32_t _signal_one_high_ticks;
     uint32_t _signal_one_low_ticks;
+    uint32_t _signal_reset_ticks;
     rmt_channel_t _channel;
 
     static void convert_data(

@@ -79,7 +79,8 @@ namespace mesh::app::light_strip
     if(json_serializer<unique_ptr<light_source_settings>>::from_json(json, source_settings, { 
       &_controller->settings.static_source, 
       &_controller->settings.rainbow_source, 
-      &_controller->settings.udp_source }))
+      &_controller->settings.udp_source,
+      &_controller->settings.uart_source }))
     {
       _controller->settings.source_type = source_settings->type();
       switch(source_settings->type())

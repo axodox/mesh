@@ -10,7 +10,7 @@ namespace mesh::app::light_strip::settings
   {
     inline static const char* type_name = "uart";
 
-    uint64_t baud_rate = 115200;
+    uint64_t baud_rate = 2000000;
 
     virtual light_source_type type() const override;
   };
