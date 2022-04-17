@@ -3,6 +3,7 @@
 #include "threading/task.hpp"
 #include "threading/event.hpp"
 #include "infrastructure/logger.hpp"
+#include "storage/stream.hpp"
 
 namespace mesh::app::light_strip::sources
 {
@@ -23,5 +24,6 @@ namespace mesh::app::light_strip::sources
     threading::task _thread;
 
     void receive_data();
+    uint32_t read_header(storage::stream& stream);
   };
 }

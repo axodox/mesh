@@ -1,8 +1,9 @@
 #pragma once
-#include "led_strip.hpp"
-#include "driver/rmt.h"
 #include <chrono>
 #include <vector>
+
+#include "led_strip.hpp"
+#include "driver/rmt.h"
 
 namespace mesh::peripherals
 {

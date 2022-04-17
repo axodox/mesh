@@ -1,6 +1,6 @@
-#include "wifi.hpp"
-
 #include <cstring>
+
+#include "wifi.hpp"
 #include "infrastructure/error.hpp"
 #include "infrastructure/dependencies.hpp"
 #include "storage/nvs.hpp"

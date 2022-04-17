@@ -13,6 +13,8 @@ namespace mesh::infrastructure
     item_t* _end;
 
   public:
+    typedef item_t value_type;
+
     array_view() :
       _start(nullptr),
       _end(nullptr)

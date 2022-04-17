@@ -1,5 +1,5 @@
-#include "float3.hpp"
 #include <cmath>
+#include "float3.hpp"
 
 namespace mesh::numerics
 {

@@ -1,7 +1,8 @@
-#include "colors.hpp"
-#include "numerics/float3.hpp"
 #include <algorithm>
 #include <cmath>
+
+#include "colors.hpp"
+#include "numerics/float3.hpp"
 
 using namespace mesh::numerics;
 

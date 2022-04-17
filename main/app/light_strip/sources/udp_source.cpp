@@ -1,9 +1,9 @@
+#include <chrono>
+#include <thread>
+
 #include "udp_source.hpp"
 #include "infrastructure/bitwise_operations.hpp"
 #include "networking/socket_handle.hpp"
-
-#include <chrono>
-#include <thread>
 
 using namespace std;
 using namespace std::chrono;

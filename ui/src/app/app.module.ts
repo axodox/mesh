@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { StaticLightSourceComponent } from './components/static-light-source/static-light-source.component';
 import { RainbowLightSourceComponent } from './components/rainbow-light-source/rainbow-light-source.component';
 import { UdpLightSourceComponent } from './components/udp-light-source/udp-light-source.component';
+import { UartLightSourceComponent } from './components/uart-light-source/uart-light-source.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { UdpLightSourceComponent } from './components/udp-light-source/udp-light
     LightStripComponent,
     StaticLightSourceComponent,
     RainbowLightSourceComponent,
-    UdpLightSourceComponent
+    UdpLightSourceComponent,
+    UartLightSourceComponent
   ],
   imports: [
     BrowserModule,

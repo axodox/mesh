@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <vector>
+
 #include "color_processor.hpp"
 
 namespace mesh::app::light_strip::processors

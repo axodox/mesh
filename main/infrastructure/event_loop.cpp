@@ -1,8 +1,8 @@
-#include "event_loop.hpp"
-
 #include <exception>
 #include <thread>
 #include <chrono>
+
+#include "event_loop.hpp"
 #include "error.hpp"
 
 using namespace std;

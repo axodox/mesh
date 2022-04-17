@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+
 #include "light_source_settings.hpp"
 #include "app/light_strip/helpers/json_serialization.hpp"
 

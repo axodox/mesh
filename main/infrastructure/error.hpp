@@ -1,8 +1,9 @@
 #pragma once
-#include "esp_err.h"
 #include <exception>
 #include <string>
 #include <functional>
+
+#include "esp_err.h"
 
 #define check_result(error) throw_result(error, __FILE__, __LINE__);
 

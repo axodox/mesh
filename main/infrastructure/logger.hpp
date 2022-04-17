@@ -1,8 +1,9 @@
 #pragma once
-#include "esp_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+
+#include "esp_log.h"
 
 namespace mesh::infrastructure
 {

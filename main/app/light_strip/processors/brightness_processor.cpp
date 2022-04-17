@@ -1,5 +1,5 @@
-#include "brightness_processor.hpp"
 #include <cmath>
+#include "brightness_processor.hpp"
 
 using namespace std;
 using namespace mesh::numerics;

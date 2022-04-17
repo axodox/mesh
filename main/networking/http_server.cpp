@@ -1,5 +1,6 @@
-#include "http_server.hpp"
 #include <algorithm>
+
+#include "http_server.hpp"
 #include "infrastructure/bitwise_operations.hpp"
 #include "infrastructure/error.hpp"
 

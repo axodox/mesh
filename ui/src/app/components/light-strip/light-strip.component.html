@@ -23,6 +23,7 @@
       <option value="static">Static</option>
       <option value="rainbow">Rainbow</option>
       <option value="udp">UDP</option>
+      <option value="uart">UART</option>
     </select>
   </div>
 </div>
@@ -30,3 +31,4 @@
 <app-static-light-source *ngIf="getType() == 'static'" [source]="source"></app-static-light-source>
 <app-rainbow-light-source *ngIf="getType() == 'rainbow'" [source]="source"></app-rainbow-light-source>
 <app-udp-light-source *ngIf="getType() == 'udp'" [source]="source"></app-udp-light-source>
+<app-uart-light-source *ngIf="getType() == 'uart'" [source]="source"></app-uart-light-source>

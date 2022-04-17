@@ -1,7 +1,8 @@
 #pragma once
-#include "json_value.hpp"
 #include <type_traits>
 #include <chrono>
+
+#include "json_value.hpp"
 #include "infrastructure/traits.hpp"
 
 namespace mesh::serialization::json

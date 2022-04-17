@@ -25,11 +25,13 @@ idf_component_register(SRCS
 
                         "peripherals/integrated_led.cpp"
                         "peripherals/ws281x_strip.cpp"
+                        "peripherals/uart_stream.cpp"
 
                         "storage/embedded.cpp"
                         "storage/nvs.cpp"
                         "storage/spiffs.cpp"
                         "storage/file_io.cpp"
+                        "storage/stream.cpp"
 
                         "serialization/json/json_value.cpp"
                         "serialization/json/json_null.cpp"
@@ -55,6 +57,7 @@ idf_component_register(SRCS
                         "app/light_strip/sources/static_source.cpp"
                         "app/light_strip/sources/rainbow_source.cpp"
                         "app/light_strip/sources/udp_source.cpp"
+                        "app/light_strip/sources/uart_source.cpp"
                         "app/light_strip/processors/color_processor.cpp"
                         "app/light_strip/processors/brightness_processor.cpp"
                         "app/light_strip/light_strip_controller.cpp"

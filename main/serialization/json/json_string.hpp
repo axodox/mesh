@@ -1,7 +1,8 @@
 #pragma once
-#include "json_value.hpp"
 #include <string>
 #include <type_traits>
+
+#include "json_value.hpp"
 
 namespace mesh::serialization::json
 {

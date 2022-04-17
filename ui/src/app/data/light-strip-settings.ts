@@ -30,6 +30,7 @@ export enum LightSourceType {
   Static = "static",
   Rainbow = "rainbow",
   Udp = "udp",
+  Uart = "uart",
 }
 
 export type AnyLightSourceSettings = EmptySourceSettings | StaticSourceSettings | RainbowSourceSettings | UdpSourceSettings | any
@@ -56,4 +57,9 @@ export class RainbowSourceSettings extends LightSourceSettings {
 export class UdpSourceSettings extends LightSourceSettings {
   $type = LightSourceType.Udp;
   port : number | undefined;
+}
+
+export class UartSourceSettings extends LightSourceSettings {
+  $type = LightSourceType.Uart;
+  baudRate : number | undefined;
 }

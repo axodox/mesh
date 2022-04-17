@@ -3,9 +3,7 @@
 #include <string>
 
 #include "esp_http_server.h"
-
 #include "infrastructure/array_view.hpp"
-
 #include "http_query_method.hpp"
 #include "http_text_stream.hpp"
 

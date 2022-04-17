@@ -4,6 +4,8 @@ using namespace mesh::infrastructure;
 
 namespace mesh::threading
 {
+  thread_local task* task::_current_task = nullptr;
+
   task::task(std::function<void()> &&action, task_affinity affinity, task_priority priority, const char *name) :
     _action(std::move(action)),
     _task_handle(nullptr),
@@ -23,6 +25,11 @@ namespace mesh::threading
   task::~task()
   {
     close();
+  }
+
+  task* task::current()
+  {
+    return _current_task;
   }
 
   bool task::is_running() const
@@ -46,9 +53,15 @@ namespace mesh::threading
   void task::worker(void *data)
   {
     auto that = static_cast<task*>(data);
+
+    _current_task = that;
     _logger.log_message(log_severity::info, "Task %s started.", that->_name);
+
     that->_action();
+
     _logger.log_message(log_severity::info, "Task %s finished.", that->_name);
+    _current_task = nullptr;
+
     that->_finished.set();
   }
 }
