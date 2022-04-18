@@ -22,7 +22,7 @@ namespace mesh::peripherals
       check_result(uart_driver_delete(_port));
     }
 
-    check_result(uart_driver_install(_port, 1024, 0, 0, nullptr, 0));
+    check_result(uart_driver_install(_port, 2048, 0, 0, nullptr, 0));
 
     uart_config_t uart_config = {
       .baud_rate = int(_baud_rate),

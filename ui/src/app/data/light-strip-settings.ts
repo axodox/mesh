@@ -15,7 +15,7 @@ export class Float3 {
 }
 
 export class BrightnessProcessorSettings {
-  gamma : Float3 | undefined;
+  gamma : Float3 = new Float3(1, 1, 1);
   brightness : number | undefined;
   maxBrightness : number | undefined;
 }

@@ -3,10 +3,11 @@
 
 #include "uart_source.hpp"
 #include "infrastructure/bitwise_operations.hpp"
+#include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "peripherals/uart_stream.hpp"
-#include "storage/serializer.hpp"
 #include "peripherals/integrated_led.hpp"
+#include "storage/serializer.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -48,12 +49,15 @@ namespace mesh::app::light_strip::sources
 
   void uart_source::receive_data()
   {
-    vector<color_rgb> buffer;
+    auto led = dependencies.resolve<integrated_led>();
+    vector<color_rgb> front_buffer, back_buffer;
+
+    led->state(false);
 
     uart_stream stream;
     while (_thread.is_running())
     {
-      // Initialize socket
+      //Initialize UART
       if (stream.baud_rate() != _context.settings.uart_source.baud_rate)
       {
         _logger.log_message(log_severity::info, "Initializing UART...");
@@ -61,26 +65,46 @@ namespace mesh::app::light_strip::sources
         _logger.log_message(log_severity::info, "UART ready.");
       }
 
+      //Read header
+      led->state(false);
       auto led_count = read_header(stream);
+      led->state(led_count > 0);
       
-      if(led_count > 0)
+      //Try again if later if failed
+      if(led_count == 0) continue;
+
+      //Resize buffer as needed
+      if (led_count != back_buffer.size())
       {
-        if (led_count != buffer.size())
+        back_buffer.resize(led_count);
+      }
+
+      //Read colors
+      array_view buffer_view{ back_buffer };
+      stream.read(buffer_view);
+
+      //Validate checksum
+      uint8_t checksum = 0;
+      for(auto& color : back_buffer)
+      {
+        checksum += color.r * color.g ^ color.b;
+      }
+
+      //If checksum is valid switch buffers
+      if(stream.read<uint8_t>() == checksum)
+      {
+        swap(back_buffer, front_buffer);
+
         {
           lock_guard lock(_mutex);
-          buffer.resize(led_count);
-
-          _buffer = buffer;
+          _buffer = front_buffer;
         }
 
-        stream.read(_buffer);
-
-        auto closer = stream.read<uint8_t>();
-        stream.flush();
-
-        if(closer == 0xAA) _context.frame_ready.set();
+        _context.frame_ready.set();
       }
     }
+
+    led->state(false);
   }
 
   uint32_t uart_source::read_header(storage::stream &stream)

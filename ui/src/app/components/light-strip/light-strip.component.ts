@@ -14,6 +14,8 @@ export class LightStripComponent implements OnInit {
   brightnessProcessor = new BrightnessProcessorSettings();
   device = new DeviceSettings();
 
+  areBrightnessDetailsVisible = false;
+
   getType() {
     return this.source?.$type ?? "none";
   }
@@ -36,11 +38,47 @@ export class LightStripComponent implements OnInit {
     this.changeDetector.detectChanges();
   }
 
+  onToggleBrightnessDetails(event: any) {
+    this.areBrightnessDetailsVisible = !this.areBrightnessDetailsVisible;
+  }
+
   onBrightnessChange(event: any) {    
     this.brightnessProcessor.brightness = parseFloat(event.target.value);
 
     let settings = new BrightnessProcessorSettings();
     settings.brightness = this.brightnessProcessor.brightness;
+    this.lightStripService.setBrightnessSettings(settings);
+  }
+
+  onMaxBrightnessChange(event: any) {    
+    this.brightnessProcessor.maxBrightness = parseFloat(event.target.value);
+
+    let settings = new BrightnessProcessorSettings();
+    settings.maxBrightness = this.brightnessProcessor.maxBrightness;
+    this.lightStripService.setBrightnessSettings(settings);
+  }
+
+  onGammaRChange(event: any) {    
+    this.brightnessProcessor.gamma.x = parseFloat(event.target.value);
+
+    let settings = new BrightnessProcessorSettings();
+    settings.gamma = this.brightnessProcessor.gamma;
+    this.lightStripService.setBrightnessSettings(settings);
+  }
+
+  onGammaGChange(event: any) {    
+    this.brightnessProcessor.gamma.y = parseFloat(event.target.value);
+
+    let settings = new BrightnessProcessorSettings();
+    settings.gamma = this.brightnessProcessor.gamma;
+    this.lightStripService.setBrightnessSettings(settings);
+  }
+
+  onGammaBChange(event: any) {    
+    this.brightnessProcessor.gamma.z = parseFloat(event.target.value);
+
+    let settings = new BrightnessProcessorSettings();
+    settings.gamma = this.brightnessProcessor.gamma;
     this.lightStripService.setBrightnessSettings(settings);
   }
 
