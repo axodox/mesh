@@ -84,14 +84,15 @@ namespace mesh::app::light_strip::sources
       stream.read(buffer_view);
 
       //Validate checksum
-      uint8_t checksum = 0;
+      uint32_t checksum = 0;
       for(auto& color : back_buffer)
       {
-        checksum += color.r * color.g ^ color.b;
+        uint32_t hash = (uint32_t(color.r) << 24) + (uint32_t(color.g) << 16) + uint32_t(color.b);
+        checksum = (checksum + 0x9e3779b9 + (hash << 6) + (hash >> 2)) ^ hash;
       }
 
       //If checksum is valid switch buffers
-      if(stream.read<uint8_t>() == checksum)
+      if(stream.read<uint32_t>() == checksum)
       {
         swap(back_buffer, front_buffer);
 
@@ -101,6 +102,7 @@ namespace mesh::app::light_strip::sources
         }
 
         _context.frame_ready.set();
+        stream.flush();
       }
     }
 
