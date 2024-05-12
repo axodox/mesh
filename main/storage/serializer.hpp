@@ -12,12 +12,12 @@ namespace mesh::storage
   {
     static void serialize(stream& stream, const T& value)
     {
-      stream.write(sizeof(T), reinterpret_cast<const uint8_t*>(&value));
+      stream.write({ reinterpret_cast<const uint8_t*>(&value), sizeof(T) });
     }
 
     static void deserialize(stream& stream, T& value)
     {
-      stream.read(sizeof(T), reinterpret_cast<uint8_t*>(&value));
+      stream.read({ reinterpret_cast<uint8_t*>(&value), sizeof(T) });
     }
   };
 
@@ -43,7 +43,7 @@ namespace mesh::storage
     {
       if constexpr(std::is_trivially_copyable<typename T::value_type>::value)
       {
-        stream.read(value.size() * sizeof(typename T::value_type), reinterpret_cast<uint8_t*>(value.data()));
+        stream.read({ reinterpret_cast<uint8_t*>(value.data()), value.size() * sizeof(typename T::value_type) });
       }
       else
       {

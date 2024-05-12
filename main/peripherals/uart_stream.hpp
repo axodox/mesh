@@ -24,8 +24,8 @@ namespace mesh::peripherals
     uart_port_t port() const;
     operator bool() const;
     
-    virtual void write(size_t length, const uint8_t* bytes) override;
-    virtual void read(size_t length, uint8_t* bytes) override;
+    virtual void write(std::span<const uint8_t> buffer) override;
+    virtual void read(std::span<uint8_t> buffer) override;
     virtual void flush() override;
 
   private:

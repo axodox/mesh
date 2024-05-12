@@ -32,6 +32,7 @@ idf_component_register(SRCS
                         "storage/spiffs.cpp"
                         "storage/file_io.cpp"
                         "storage/stream.cpp"
+                        "storage/memory_stream.cpp"
 
                         "serialization/json/json_value.cpp"
                         "serialization/json/json_null.cpp"

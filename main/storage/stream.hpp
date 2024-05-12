@@ -1,14 +1,15 @@
 #pragma once
 #include <cstdint>
 #include <cstring>
+#include <span>
 
 namespace mesh::storage
 {
   class stream
   {
   public:
-    virtual void write(size_t length, const uint8_t* bytes) = 0;
-    virtual void read(size_t length, uint8_t* bytes) = 0;
+    virtual void write(std::span<const uint8_t> buffer) = 0;
+    virtual void read(std::span<uint8_t> buffer) = 0;
 
     virtual size_t position() const;
     virtual void seek(size_t position);
