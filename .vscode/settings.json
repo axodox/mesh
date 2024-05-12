@@ -8,4 +8,6 @@
     "exception": "cpp"
   },
   "cSpell.diagnosticLevel": "Hint",
+  "idf.portWin": "COM4",
+  "idf.flashType": "UART",
 }
