@@ -21,7 +21,7 @@ namespace mesh::app::light_strip::sources
 {
   uart_source::uart_source(light_strip_context &context) : 
     light_source(context),
-    _thread([=] { receive_data(); }, task_affinity::core_1, task_priority::normal, "uart_source")
+    _thread([this] { receive_data(); }, task_affinity::core_1, task_priority::normal, "uart_source")
   {
     _properties.steady_frame_source = false;
     _properties.is_passthrough = true;

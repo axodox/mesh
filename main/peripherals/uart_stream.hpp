@@ -29,6 +29,7 @@ namespace mesh::peripherals
     virtual void flush() override;
 
   private:
+    static const uart_port_t _invalid_port = uart_port_t(~0);
     uart_port_t _port;
     uint32_t _baud_rate;
   };

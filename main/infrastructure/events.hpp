@@ -7,19 +7,17 @@
 
 namespace mesh::events
 {
-  template <typename TInstance, typename TMemberFunc>
-  static auto member_func(TInstance&& instance, TMemberFunc&& memberFunction)
+  template <typename... TArgs>
+  class event_handler : public std::function<void(TArgs...)>
   {
-    return[member = std::mem_fn(memberFunction), instance](auto&&... args){ return member(*instance, std::forward<decltype(args)>(args)...); };
-  }
+  public:
+    template<typename TInstance, typename TReturn = void>
+    event_handler(TInstance* instance, TReturn(TInstance::* handler)(TArgs...)) :
+      std::function<void(TArgs...)>([=](TArgs&&... args) { (instance->*handler)(std::forward<TArgs>(args)...); })
+    { }
 
-  template <typename TFunc, typename... TBoundArgs>
-  static auto bind_func(TFunc&& func, TBoundArgs... boundArgs)
-  {
-    return[function = std::mem_fn(func), boundArgs...](auto&&... args){ 
-      return function(boundArgs..., std::forward<decltype(args)>(args)...);
-    };
-  }
+    using std::function<void(TArgs...)>::function;
+  };
 
   class event_handler_collection_base
   {
@@ -31,18 +29,17 @@ namespace mesh::events
     virtual ~event_handler_collection_base() noexcept = default;
   };
 
-  class event_subscription
+  class [[nodiscard]] event_subscription
   {
-  private:
-    std::weak_ptr<event_handler_collection_base> _event_handler_collection;
-    event_handler_collection_base::token_t _token;
-
   public:
+    event_subscription() = default;
+
     event_subscription& operator=(event_subscription&& other) noexcept
     {
-      _event_handler_collection = std::move(other._event_handler_collection);
+      _handlers = std::move(other._handlers);
       _token = other._token;
-      other._token = event_handler_collection_base::token_t{};
+
+      other._token = {};
       return *this;
     }
 
@@ -55,13 +52,13 @@ namespace mesh::events
     event_subscription& operator=(const event_subscription&) = delete;
 
     event_subscription(const std::shared_ptr<event_handler_collection_base>& eventHandlerCollection, event_handler_collection_base::token_t token) noexcept :
-      _event_handler_collection(eventHandlerCollection),
+      _handlers(eventHandlerCollection),
       _token(token)
     { }
 
     ~event_subscription() noexcept
     {
-      auto eventHandlerCollection = _event_handler_collection.lock();
+      auto eventHandlerCollection = _handlers.lock();
       if (eventHandlerCollection)
       {
         eventHandlerCollection->remove(_token);
@@ -70,45 +67,48 @@ namespace mesh::events
 
     bool is_valid() const noexcept
     {
-      return _event_handler_collection.lock() != nullptr;
+      return _handlers.lock() != nullptr;
     }
+
+  private:
+    std::weak_ptr<event_handler_collection_base> _handlers;
+    event_handler_collection_base::token_t _token;
   };
 
   template<typename... TArgs>
   class event_handler_collection : public event_handler_collection_base
   {
   public:
-    typedef std::function<void(TArgs...)> handler_t;
+    typedef event_handler<TArgs...> handler_t;
 
-  private:
-    std::shared_mutex _mutex;
-    token_t _next_token = {};
-    std::unordered_map<token_t, handler_t> _handlers;
-
-  public:
     token_t add(handler_t&& handler) noexcept
     {
-      std::unique_lock<std::shared_mutex> lock(_mutex);
+      std::unique_lock lock(_mutex);
 
-      auto token = _next_token++;
+      auto token = _nextToken++;
       _handlers[token] = std::move(handler);
       return token;
     }
 
     virtual bool remove(token_t token) noexcept override
     {
-      std::unique_lock<std::shared_mutex> lock(_mutex);
+      std::unique_lock lock(_mutex);
       return _handlers.erase(token);
     }
 
     void invoke(TArgs... args)
     {
-      std::shared_lock<std::shared_mutex> lock(_mutex);
+      std::shared_lock lock(_mutex);
       for (auto& [token, handler] : _handlers)
       {
         handler(std::forward<TArgs>(args)...);
       }
     }
+
+  private:
+    std::shared_mutex _mutex;
+    std::unordered_map<token_t, handler_t> _handlers;
+    token_t _nextToken = {};
   };
 
   struct no_revoke_t {};
@@ -119,13 +119,9 @@ namespace mesh::events
 
   class event_owner
   {
-  private:
-    static inline size_t _next_id = 1;
-    size_t _id;
-    
   public:
     event_owner() noexcept :
-      _id(_next_id++)
+      _id(_nextId++)
     { }
 
     event_owner& operator=(event_owner&& other) noexcept
@@ -155,6 +151,10 @@ namespace mesh::events
     {
       return _id;
     }
+
+  private:
+    static inline std::atomic_size_t _nextId = 1;
+    size_t _id;
   };
 
   template<typename... TArgs>
@@ -178,24 +178,22 @@ namespace mesh::events
       _handlers(std::make_shared<event_handler_collection<TArgs...>>())
     { }
 
-    [[nodiscard]]
-    event_subscription subscribe(std::function<void(TArgs...)>&& handler) noexcept
+    event_subscription subscribe(event_handler<TArgs...>&& handler) noexcept
     {
       return { _handlers, _handlers->add(std::move(handler)) };
     }
 
-    void subscribe(no_revoke_t, std::function<void(TArgs...)>&& handler) noexcept
+    void subscribe(no_revoke_t, event_handler<TArgs...>&& handler) noexcept
     {
       _handlers->add(std::move(handler));
     }
 
-    [[nodiscard]]
-    event_subscription operator()(std::function<void(TArgs...)>&& handler) noexcept
+    event_subscription operator()(event_handler<TArgs...>&& handler) noexcept
     {
       return subscribe(std::move(handler));
     }
 
-    void operator()(no_revoke_t, std::function<void(TArgs...)>&& handler) noexcept
+    void operator()(no_revoke_t, event_handler<TArgs...>&& handler) noexcept
     {
       subscribe(no_revoke, std::move(handler));
     }
@@ -210,34 +208,13 @@ namespace mesh::events
       _handlers->invoke(std::forward<TArgs>(args)...);
     }
 
-    std::tuple<TArgs...> wait(std::chrono::duration<uint32_t, std::milli> timeout)
-    {
-      return wait(timeout.count());
-    }
-
-    /*std::tuple<TArgs...> wait(uint32_t timeout = INFINITE)
-    {
-      if (timeout == 0u) return {};
-
-      std::tuple<TArgs...> result{};
-
-      Threading::manual_reset_event awaiter;
-      auto subscription = subscribe([&](TArgs... args) -> void {
-        result = { args... };
-        awaiter.set();
-        });
-
-      awaiter.wait(timeout);
-      return result;
-    }*/
-
     ~event_publisher() noexcept
     {
       _handlers.reset();
     }
   };
 
-  template<typename... TArgs, typename TEvent = event_publisher<TArgs...>>
+  template<typename... TArgs, typename TEvent>
   void event_owner::raise(TEvent& event, TArgs... args) const
   {
     event.raise(*this, std::forward<TArgs>(args)...);

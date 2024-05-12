@@ -1,3 +1,4 @@
+#include <time.h>
 #include "logger.hpp"
 #include "text.hpp"
 

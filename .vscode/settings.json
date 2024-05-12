@@ -3,5 +3,9 @@
   "idf.adapterTargetName": "esp32s3",
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
-  ]
+  ],
+  "files.associations": {
+    "exception": "cpp"
+  },
+  "cSpell.diagnosticLevel": "Hint",
 }

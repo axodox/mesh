@@ -5,6 +5,7 @@
 #include <mutex>
 #include <memory>
 #include "esp_event.h"
+#include "esp_task.h"
 #include "hasher.hpp"
 #include "event_handler.hpp"
 #include "logger.hpp"

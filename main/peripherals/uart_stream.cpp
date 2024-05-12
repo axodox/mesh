@@ -9,7 +9,7 @@ using namespace mesh::threading;
 namespace mesh::peripherals
 {
   uart_stream::uart_stream() :
-    _port(~0),
+    _port(_invalid_port),
     _baud_rate(0)
   { }
 
@@ -38,10 +38,10 @@ namespace mesh::peripherals
 
   uart_stream::~uart_stream()
   {
-    if (_port != ~0)
+    if (_port != _invalid_port)
     {
       check_result(uart_driver_delete(_port));
-      _port = ~0;
+      _port = _invalid_port;
       _baud_rate = 0;
     }
   }
@@ -50,7 +50,7 @@ namespace mesh::peripherals
   {
     _port = other._port;
     _baud_rate = other._baud_rate;
-    other._port = ~0;
+    other._port = _invalid_port;
     other._baud_rate = 0;
   }
 
@@ -58,7 +58,7 @@ namespace mesh::peripherals
   {
     _port = other._port;
     _baud_rate = other._baud_rate;
-    other._port = ~0;
+    other._port = _invalid_port;
     other._baud_rate = 0;
     return *this;
   }
@@ -75,7 +75,7 @@ namespace mesh::peripherals
 
   uart_stream::operator bool() const
   {
-    return _port != ~0;
+    return _port != _invalid_port;
   }
 
   void uart_stream::write(size_t length, const uint8_t *bytes)
