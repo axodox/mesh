@@ -8,7 +8,7 @@ using namespace mesh::graphics;
 
 namespace mesh::peripherals
 {
-  ws281x_strip::ws281x_strip(ws281x_variant variant, uint8_t pin, rmt_channel_t channel) :
+  ws281x_strip::ws281x_strip(uint8_t pin, ws281x_variant variant, rmt_channel_t channel) :
     _channel(channel)
   {
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(gpio_num_t(pin), _channel);

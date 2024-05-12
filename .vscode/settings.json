@@ -5,9 +5,12 @@
     "board/esp32s3-builtin.cfg"
   ],
   "files.associations": {
-    "exception": "cpp"
+    "exception": "cpp",
+    "cstdint": "cpp",
+    "string_view": "cpp"
   },
   "cSpell.diagnosticLevel": "Hint",
   "idf.portWin": "COM4",
   "idf.flashType": "UART",
+  "cmake.configureOnOpen": false,
 }
