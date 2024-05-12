@@ -34,24 +34,24 @@ using namespace mesh::storage;
 extern "C" void app_main()
 {
   log_message(log_severity::info, "Starting...");
-  dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection> { return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); });
-  dependencies.add<led_strip>(dependency_lifetime::singleton, []() -> unique_ptr<led_strip> { return make_unique<ws281x_strip>(); });
+  //dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection> { return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); });
+  //dependencies.add<led_strip>(dependency_lifetime::singleton, []() -> unique_ptr<led_strip> { return make_unique<ws281x_strip>(); });
 
   try
   {
     //Services
-    dependencies.resolve<spiffs>();
-    dependencies.resolve<wifi_connection>();
-    dependencies.resolve<ntp_client>();    
+    //dependencies.resolve<spiffs>();
+    //dependencies.resolve<wifi_connection>();
+    //dependencies.resolve<ntp_client>();    
     
     //App
-    dependencies.resolve<angular_pages>();
-    dependencies.resolve<integrated_led_blinker>();
-    dependencies.resolve<light_strip_controller>();
-    dependencies.resolve<light_strip_http_interface>();
+    //dependencies.resolve<angular_pages>();
+    //dependencies.resolve<integrated_led_blinker>();
+    //dependencies.resolve<light_strip_controller>();
+    //dependencies.resolve<light_strip_http_interface>();
     
     //UI
-    dependencies.resolve<http_server>()->start();
+    //dependencies.resolve<http_server>()->start();
   }
   catch (const exception &e)
   {
