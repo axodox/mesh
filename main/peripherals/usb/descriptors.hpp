@@ -11,6 +11,7 @@ namespace mesh::peripherals::usb
   enum class descriptor_type : uint8_t
   {
     none = 0x00,
+    device = 0x01,
     configuration = 0x02,
     interface = 0x04,
     endpoint = 0x05,
@@ -18,7 +19,35 @@ namespace mesh::peripherals::usb
     report = 0x22
   };
 
-  //Configuration
+  // Device
+
+  packed_struct device_descriptor
+  {
+  private:
+    uint8_t _length = 18;
+    descriptor_type _type = descriptor_type::device;
+
+  public:
+    uint16_t usb_specification = 0x0200;
+    
+    uint8_t device_class = 0;
+    uint8_t device_sub_class = 0;
+    uint8_t device_protocol = 0;
+    
+    uint8_t max_packet_size = 64;
+
+    uint16_t vendor_id = 0xa02f;
+    uint16_t product_id = 0x0001;
+    uint16_t device_id = 0x0001;
+
+    uint8_t vendor_name = 0;
+    uint8_t product_name = 0;
+    uint8_t serial_number = 0;
+
+    uint8_t configuration_count = 0;
+  };
+  
+  // Configuration
 
   enum class configuration_attributes : uint8_t
   {
@@ -34,16 +63,16 @@ namespace mesh::peripherals::usb
 
   public:
     uint16_t total_length = 0;
-    uint8_t interface_count = 0; 
+    uint8_t interface_count = 0;
     uint8_t id = 0;
     string_index name = 0;
-    configuration_attributes attributes = configuration_attributes::remote_wakeup;
+    configuration_attributes attributes = configuration_attributes::none;
     uint8_t power = 100;
   };
 
   static_assert(sizeof(configuration_descriptor) == 9);
 
-  //Interface
+  // Interface
 
   enum class interface_type : uint8_t
   {
@@ -69,7 +98,7 @@ namespace mesh::peripherals::usb
 
   static_assert(sizeof(interface_descriptor) == 9);
 
-  //Endpoint
+  // Endpoint
 
   enum class endpoint_direction : uint8_t
   {
@@ -102,7 +131,7 @@ namespace mesh::peripherals::usb
 
   static_assert(sizeof(endpoint_descriptor) == 7);
 
-  //HID
+  // HID
 
   packed_struct hid_descriptor
   {
@@ -119,5 +148,5 @@ namespace mesh::peripherals::usb
   };
 
   static_assert(sizeof(hid_descriptor) == 9);
-  
+
 }
