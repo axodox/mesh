@@ -13,17 +13,35 @@ namespace mesh::peripherals::usb
     configuration()->attributes = value;
   }
 
-  void configuration_builder::add_hid_interface(bool hasOutput, const char* name)
+  void configuration_builder::add_hid_interface(bool has_output, const char* name)
   {
     interface_descriptor interface;
     interface.id = configuration()->interface_count;
-    interface.endpoint_count = hasOutput ? 2 : 1;
+    interface.endpoint_count = has_output ? 2 : 1;
     interface.type = interface_type::hid;
     _device->set_string(interface.name, name);
     add_description(interface);
 
     hid_descriptor hid;
-    //hid.
+    hid.descriptor_count = report_count;
+    hid.descriptor_type = descriptor_type::report;
+    hid.descriptor_length = report_length;
+    add_description(hid);
+
+    endpoint_descriptor endpoint_in;
+    endpoint_in.address = endpoint_address(1, endpoint_direction::in);
+    endpoint_in.attributes = endpoint_attributes::interrupt;
+    endpoint_in.max_packet_size = largest_report_size;
+    add_description(endpoint_in);
+
+    if (has_output)
+    {
+      endpoint_descriptor endpoint_out;
+      endpoint_out.address = endpoint_address(2, endpoint_direction::out);
+      endpoint_out.attributes = endpoint_attributes::interrupt;
+      endpoint_out.max_packet_size = largest_report_size;
+      add_description(endpoint_out);
+    }
   }
 
   configuration_builder::configuration_builder(device_builder& device) :

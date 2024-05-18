@@ -4,7 +4,7 @@ namespace mesh::peripherals::usb
 {
   device_builder::device_builder()
   {
-    _strings.push_back("");
+    _strings.push_back("\x09\x04");
   }
 
   void device_builder::vendor(uint16_t id, const char* value)

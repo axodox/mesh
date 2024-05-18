@@ -33,7 +33,7 @@ namespace mesh::peripherals::usb
     uint8_t device_class = 0;
     uint8_t device_sub_class = 0;
     uint8_t device_protocol = 0;
-    
+
     uint8_t max_packet_size = 64;
 
     uint16_t vendor_id = 0xa02f;
@@ -46,6 +46,8 @@ namespace mesh::peripherals::usb
 
     uint8_t configuration_count = 0;
   };
+
+  static_assert(sizeof(device_descriptor) == 18);
   
   // Configuration
 
@@ -103,10 +105,10 @@ namespace mesh::peripherals::usb
   enum class endpoint_direction : uint8_t
   {
     out = 0,
-    in = 127
+    in = 128
   };
 
-  uint8_t endpoint_address(uint8_t lane, endpoint_direction direction);
+  constexpr uint8_t endpoint_address(uint8_t lane, endpoint_direction direction);
 
   enum class endpoint_attributes : uint8_t
   {
@@ -124,7 +126,7 @@ namespace mesh::peripherals::usb
 
   public:
     uint8_t address = 0;
-    endpoint_attributes attributes = endpoint_attributes::interrupt;
+    endpoint_attributes attributes = endpoint_attributes::control;
     uint16_t max_packet_size = 0;
     uint8_t interval = 10;
   };
