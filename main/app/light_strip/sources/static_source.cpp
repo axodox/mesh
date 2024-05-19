@@ -26,7 +26,7 @@ namespace mesh::app::light_strip::sources
     return &_context.settings.static_source;
   }
 
-  void static_source::fill(infrastructure::array_view<graphics::color_rgb>& pixels)
+  void static_source::fill(std::span<graphics::color_rgb> pixels)
   {
     for(auto& pixel : pixels)
     {

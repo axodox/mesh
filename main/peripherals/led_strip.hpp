@@ -2,6 +2,7 @@
 #include "driver/rmt.h"
 #include "graphics/colors.hpp"
 #include "infrastructure/array_view.hpp"
+#include <span>
 
 namespace mesh::peripherals
 {
@@ -10,6 +11,6 @@ namespace mesh::peripherals
   public:
     virtual ~led_strip() = default;
 
-    virtual void push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels) = 0;
+    virtual void push_pixels(std::span<const graphics::color_rgb> pixels) = 0;
   };
 }

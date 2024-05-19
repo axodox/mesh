@@ -37,7 +37,7 @@ namespace mesh::app::light_strip::sources
     return &_context.settings.uart_source;
   }
 
-  void uart_source::fill(infrastructure::array_view<graphics::color_rgb> &pixels)
+  void uart_source::fill(std::span<graphics::color_rgb> pixels)
   {
     lock_guard lock(_mutex);
     auto copied_length = min(pixels.size(), _buffer.size()) * sizeof(color_rgb);

@@ -48,7 +48,7 @@ namespace mesh::app::light_strip
   void light_strip_controller::worker()
   {
     vector<color_rgb> lights;
-    array_view<color_rgb> lights_view;
+    span<color_rgb> lights_view;
     while(!_isDisposed)
     {
       auto now = steady_clock::now();

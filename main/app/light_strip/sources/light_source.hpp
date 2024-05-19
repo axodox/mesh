@@ -20,7 +20,7 @@ namespace mesh::app::light_strip::sources
     virtual const settings::light_source_settings* get_settings() const = 0;
 
     virtual void on_settings_changed() { };
-    virtual void fill(infrastructure::array_view<graphics::color_rgb> &pixels) = 0;
+    virtual void fill(std::span<graphics::color_rgb> pixels) = 0;
 
     const light_source_properties& properties() const;
 

@@ -7,6 +7,10 @@
 #include <span>
 #include <tinyusb.h>
 
+#define WS281X_PIN 48
+#include "ws281x_strip.hpp"
+
+using namespace mesh::graphics;
 using namespace mesh::peripherals;
 using namespace std;
 
@@ -190,8 +194,17 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   }
 }
 
+unique_ptr<ws281x_strip> _light_strip;
+
 void setup_usb()
 {
+  _light_strip = std::make_unique<ws281x_strip>();
+
+  color_rgb colors[] = {
+    color_rgb{64, 0, 0}
+  };
+  _light_strip->push_pixels(colors);
+
   tinyusb_config_t usb_config{
     .device_descriptor = device_descriptor,
     .string_descriptor = string_descriptor,

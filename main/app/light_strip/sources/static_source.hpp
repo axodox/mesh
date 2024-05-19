@@ -11,6 +11,6 @@ namespace mesh::app::light_strip::sources
     virtual settings::light_source_type type() const override;
     virtual void on_settings_changed() override;
     virtual const settings::light_source_settings* get_settings() const override;
-    virtual void fill(infrastructure::array_view<graphics::color_rgb>& pixels) override;
+    virtual void fill(std::span<graphics::color_rgb> pixels) override;
   };
 }

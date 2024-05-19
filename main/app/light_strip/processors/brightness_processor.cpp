@@ -18,7 +18,7 @@ namespace mesh::app::light_strip::processors
     rebuild_gamma();
   }
 
-  void brightness_processor::process(infrastructure::array_view<graphics::color_rgb>& pixels)
+  void brightness_processor::process(std::span<graphics::color_rgb> pixels)
   {
     //Prepare buffer
     if(_buffer.size() != pixels.size())

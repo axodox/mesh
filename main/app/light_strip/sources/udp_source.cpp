@@ -48,7 +48,7 @@ namespace mesh::app::light_strip::sources
     return &_context.settings.udp_source;
   }
 
-  void udp_source::fill(infrastructure::array_view<graphics::color_rgb>& pixels)
+  void udp_source::fill(std::span<graphics::color_rgb> pixels)
   {
     lock_guard<mutex> lock(_mutex);
     auto copied_length = min(pixels.size(), _buffer.size()) * sizeof(color_rgb);

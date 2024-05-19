@@ -69,7 +69,9 @@
     "cinttypes": "cpp",
     "typeindex": "cpp",
     "typeinfo": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "codecvt": "cpp",
+    "set": "cpp"
   },
   "cSpell.diagnosticLevel": "Hint",
   "idf.portWin": "COM4",

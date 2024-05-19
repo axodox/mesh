@@ -20,7 +20,7 @@ namespace mesh::app::light_strip::sources
     return &_context.settings.rainbow_source;
   }
 
-  void rainbow_source::fill(infrastructure::array_view<graphics::color_rgb>& pixels)
+  void rainbow_source::fill(std::span<graphics::color_rgb> pixels)
   {
     _angle = wrap(_angle + duration_cast<duration<float>>(_context.settings.device.interval).count() * deg(_context.settings.rainbow_source.angular_velocity), 0.f, 360.f);
 

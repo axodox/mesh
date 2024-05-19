@@ -47,9 +47,9 @@ namespace mesh::peripherals
     check_result(rmt_driver_uninstall(_channel));
   }
 
-  void ws281x_strip::push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels)
+  void ws281x_strip::push_pixels(std::span<const graphics::color_rgb> pixels)
   {
-    check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size() * 3, true));
+    check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size_bytes(), true));
     
     const rmt_item32_t resetbit = {{{ 0, 1, _signal_reset_ticks, 0 }}};
     rmt_write_items(_channel, &resetbit, 1, true);

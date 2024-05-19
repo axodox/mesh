@@ -1,6 +1,5 @@
 #pragma once
 #include <chrono>
-#include <vector>
 
 #include "hwconfig.h"
 #include "led_strip.hpp"
@@ -34,7 +33,7 @@ namespace mesh::peripherals
 
     virtual ~ws281x_strip() override;
 
-    virtual void push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels) override;
+    virtual void push_pixels(std::span<const graphics::color_rgb> pixels) override;
   
   private:
     uint32_t _signal_zero_high_ticks;
