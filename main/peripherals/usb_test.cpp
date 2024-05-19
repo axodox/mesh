@@ -21,7 +21,7 @@ const char* string_descriptor[6] = {
 
 const usb_device_descriptor device_descriptor{
   .vendor_id = 0xa02f,
-  .product_id = 0x0002,
+  .product_id = 0x0005,
   .device_id = 0x0001,
 
   .vendor_name = 1,
@@ -70,12 +70,13 @@ hid_configuration_descriptor{
 
 const uint8_t* tud_hid_descriptor_report_cb(uint8_t instance)
 {
+  printf("Get descriptor %d\n", instance);
   return lamp_array_report_descriptor;
 }
 
 template <typename T> T* allocate_report(span<uint8_t> buffer)
 {
-  //assert(buffer.size() >= sizeof(T));
+  assert(buffer.size() >= sizeof(T));
   return new (buffer.data()) T();
 }
 
@@ -83,9 +84,9 @@ uint16_t get_lamp_array_attributes_report(span<uint8_t> buffer)
 {
   auto report = allocate_report<lamp_array_attributes_report>(buffer);
   report->lamp_count = 1;
-  report->size = { 1, 1, 1 };
-  report->kind = lamp_array_kind::scene;
-  report->min_update_interval = lamp_time(1s);
+  report->size = { 200, 200, 200 };
+  report->kind = lamp_array_kind::peripheral;
+  report->min_update_interval = lamp_time(100ms);
   return uint16_t(sizeof(lamp_array_attributes_report));
 }
 
@@ -97,10 +98,10 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
 {
   auto report = allocate_report<lamp_attributes_response_report>(buffer);
   report->attributes = {
-    .id = lamp_id,
-    .position = { 0, 0, 0 },
+    .id = lamp_id++,
+    .position = { 10u * lamp_id, 10u * lamp_id, 10u * lamp_id },
     .update_latency = lamp_time(2ms),
-    .purposes = lamp_purposes::presentation,
+    .purposes = lamp_purposes::accent,
     .red_level_count = 255,
     .green_level_count = 255,
     .blue_level_count = 255,
@@ -108,11 +109,15 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
     .is_programmable = true,
     .lamp_key = 0,
   };
+
+  if (lamp_id == 1) lamp_id = 0;
+
   return uint16_t(sizeof(lamp_attributes_response_report));
 }
 
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t length)
 {
+  printf("Get report %d, len %d\n", report_id, length);
   span<uint8_t> report_buffer{ buffer, length };
 
   switch (report_id)
@@ -127,7 +132,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
 
 template <typename T> const T* read_report(span<const uint8_t> buffer)
 {
-  //assert(buffer.size() >= sizeof(T));
+  assert(buffer.size() >= sizeof(T));
   return reinterpret_cast<const T*>(buffer.data());
 }
 
@@ -135,12 +140,14 @@ void set_lamp_attributes_request_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_attributes_request_report>(buffer);
   lamp_id = report->lamp_id;
+  printf("Lamp attributes request %d\n", lamp_id);
 }
 
 void set_lamp_array_control_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_array_control_report>(buffer);
   autonomous_mode = report->autonomous_mode;
+  printf("Autonomous mode %d\n", autonomous_mode);
 }
 
 void set_lamp_multi_update_report(span<const uint8_t> buffer)
@@ -149,7 +156,7 @@ void set_lamp_multi_update_report(span<const uint8_t> buffer)
   if (report->count < 1) return;
 
   color = report->colors[0];
-  printf("Color set %04lx\n", color.v);
+  printf("Color set %08lx\n", color.v);
 }
 
 void set_lamp_range_update_report(span<const uint8_t> buffer)
@@ -158,11 +165,12 @@ void set_lamp_range_update_report(span<const uint8_t> buffer)
   if (report->start != 0 && report->end >= 1) return;
 
   color = report->color;
-  printf("Color set %04lx\n", color.v);
+  printf("Color set %08lx\n", color.v);
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, const uint8_t* buffer, uint16_t length)
 {
+  printf("Set report %d\n", report_id);
   span<const uint8_t> report_buffer{ buffer, length };
 
   switch (report_id)

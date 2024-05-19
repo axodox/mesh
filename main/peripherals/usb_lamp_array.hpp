@@ -54,16 +54,14 @@ namespace mesh::peripherals
     char lamp_key;
   };
 
-  packed_struct lamp_color
+  union lamp_color
   {
-    union
+    packed_struct
     {
-      struct
-      {
-        uint8_t r, g, b, w;
-      };
-      uint32_t v;
+      uint8_t r, g, b, w;
     };
+
+    uint32_t v;
   };
 
   uint32_t lamp_time(std::chrono::duration<uint32_t, std::micro> value)
@@ -74,7 +72,6 @@ namespace mesh::peripherals
   const uint8_t lamp_array_attributes_report_id = 1;
   packed_struct lamp_array_attributes_report
   {
-    const uint8_t report_id = lamp_array_attributes_report_id;
     uint16_t lamp_count;
     lamp_array_bounding_box size;
     lamp_array_kind kind;
@@ -84,14 +81,12 @@ namespace mesh::peripherals
   const uint8_t lamp_attributes_request_report_id = 2;
   packed_struct lamp_attributes_request_report
   {
-    const uint8_t report_id = lamp_attributes_request_report_id;
     uint16_t lamp_id;
   };
 
   const uint8_t lamp_attributes_response_report_id = 3;
   packed_struct lamp_attributes_response_report
   {
-    const uint8_t report_id = lamp_attributes_response_report_id;
     lamp_attributes attributes;
   };
 
@@ -106,7 +101,6 @@ namespace mesh::peripherals
   const uint8_t lamp_multi_update_report_id = 4;
   packed_struct lamp_multi_update_report
   {
-    const uint8_t report_id = lamp_multi_update_report_id;
     uint8_t count;
     lamp_update_flags update_flags;
     uint16_t ids[lamp_multi_update_size];
@@ -116,7 +110,6 @@ namespace mesh::peripherals
   const uint8_t lamp_range_update_report_id = 5;
   packed_struct lamp_range_update_report
   {
-    const uint8_t report_id = lamp_range_update_report_id;
     lamp_update_flags update_flags;
     uint16_t start;
     uint16_t end;
@@ -126,7 +119,6 @@ namespace mesh::peripherals
   const uint8_t lamp_array_control_report_id = 6;
   packed_struct lamp_array_control_report
   {
-    const uint8_t report_id = lamp_array_control_report_id;
     bool autonomous_mode;
   };
 
