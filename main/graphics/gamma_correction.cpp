@@ -27,38 +27,45 @@ namespace mesh::graphics
     return _settings;
   }
 
-  void gamma_correction::correct_gamma(std::span<graphics::color_rgb> pixels)
+  void gamma_correction::correct_gamma(std::span<graphics::color_rgb> pixels, std::span<const uint8_t> gains)
   {
-    //Prepare buffer
-    if(_buffer.size() != pixels.size())
+    // Prepare buffer
+    if (_buffer.size() != pixels.size())
     {
       _buffer.resize(pixels.size());
     }
 
-    //Brightness limit
-    auto buffer = _buffer.data();
+    // Brightness limit
+    auto buffer_ptr = _buffer.data();
+    auto gain_ptr = gains.size() == pixels.size() ? gains.data() : nullptr;
+
     float3 sum{};
     for (auto& color : pixels)
     {
-      *buffer = float3{
+      *buffer_ptr = float3{
         _gamma_mapping_r[color.r],
         _gamma_mapping_g[color.g],
         _gamma_mapping_b[color.b],
       };
 
-      sum += *buffer;
-      buffer++;
+      if (gain_ptr)
+      {
+        *buffer_ptr *= *gain_ptr++;
+      }
+
+      sum += *buffer_ptr;
+      buffer_ptr++;
     }
 
     auto brightness = (sum.x + sum.y + sum.z) / 3.f / 255.f / pixels.size();
     auto factor = brightness > _settings.max_brightness ? _settings.max_brightness / brightness : 1.f;
 
-    //Gamma correct colors and perform dithering
-    buffer = _buffer.data();
+    // Gamma correct colors and perform dithering
+    buffer_ptr = _buffer.data();
     float3 target{}, error{}, actual{}, correction{};
     for (auto& color : pixels)
     {
-      target = *buffer++ * factor;
+      target = *buffer_ptr++ * factor;
 
       actual = target.round();
       error += target - actual;

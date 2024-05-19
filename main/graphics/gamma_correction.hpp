@@ -25,7 +25,7 @@ namespace mesh::graphics
     void configure(const gamma_correction_settings& value);
     const gamma_correction_settings& configuration() const;
 
-    void correct_gamma(std::span<graphics::color_rgb> pixels);
+    void correct_gamma(std::span<graphics::color_rgb> pixels, std::span<const uint8_t> gains = {});
 
   private:
     gamma_correction_settings _settings;

@@ -124,4 +124,20 @@ namespace mesh::peripherals
 
   const uint16_t lamp_array_out_size = std::max({ sizeof(lamp_attributes_request_report), sizeof(lamp_array_control_report), sizeof(lamp_multi_update_report), sizeof(lamp_range_update_report) });
   const uint16_t lamp_array_in_size = std::max({ sizeof(lamp_array_attributes_report), sizeof(lamp_array_control_report), sizeof(lamp_attributes_response_report) });
+
+  constexpr uint32_t operator"" _mm(uint64_t value)
+  {
+    return uint32_t(value * 1'000);
+  }
+
+  constexpr uint32_t operator"" _cm(uint64_t value)
+  {
+    return uint32_t(value * 1'000'000);
+  }
+
+  struct light_segment
+  {
+    uint16_t light_count;
+    lamp_position end_position;
+  };
 }
