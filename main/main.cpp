@@ -21,6 +21,8 @@
 #include "app/light_strip/light_strip_controller.hpp"
 #include "app/light_strip/light_strip_http_interface.hpp"
 
+#include "peripherals/usb_test.hpp"
+
 using namespace std;
 using namespace std::chrono;
 using namespace std::this_thread;
@@ -52,6 +54,7 @@ extern "C" void app_main()
     
     //UI
     //dependencies.resolve<http_server>()->start();
+    setup_usb();
   }
   catch (const exception &e)
   {

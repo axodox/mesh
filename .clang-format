@@ -3,7 +3,7 @@ IndentWidth: 2
 UseTab: Never
 NamespaceIndentation: All
 BreakBeforeBraces: Allman
-ColumnLimit: 120
+ColumnLimit: 1000
 AllowShortIfStatementsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: false
 BreakConstructorInitializers: AfterColon

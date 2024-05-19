@@ -27,6 +27,8 @@ idf_component_register(SRCS
                         "peripherals/ws281x_strip.cpp"
                         "peripherals/uart_stream.cpp"
 
+                        "peripherals/usb_test.cpp"
+
                         "storage/embedded.cpp"
                         "storage/nvs.cpp"
                         "storage/spiffs.cpp"
