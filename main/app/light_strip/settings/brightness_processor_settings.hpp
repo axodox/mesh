@@ -1,17 +1,13 @@
 #pragma once
 #include "numerics/float3.hpp"
 #include "serialization/json.hpp"
+#include "graphics/gamma_correction.hpp"
 
 #define ns mesh::app::light_strip::settings
 
 namespace mesh::app::light_strip::settings
 {
-  struct brightness_processor_settings
-  {
-    numerics::float3 gamma{1.6f, 1.5f, 1.6f};
-    float brightness = 1.f;
-    float max_brightness = 0.7f;
-  };
+  using brightness_processor_settings = graphics::gamma_correction_settings;
 }
 
 namespace mesh::serialization::json

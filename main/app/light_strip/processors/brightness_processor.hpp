@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "color_processor.hpp"
+#include "graphics/gamma_correction.hpp"
 
 namespace mesh::app::light_strip::processors
 {
@@ -15,12 +16,6 @@ namespace mesh::app::light_strip::processors
     virtual void process(std::span<graphics::color_rgb> pixels) override;
 
   private:
-    std::vector<numerics::float3> _buffer;
-
-    std::array<float, 256> _gamma_mapping_r;
-    std::array<float, 256> _gamma_mapping_g;
-    std::array<float, 256> _gamma_mapping_b;
-
-    void rebuild_gamma();
+    graphics::gamma_correction _gamma_correction;
   };
 }

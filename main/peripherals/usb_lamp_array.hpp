@@ -90,7 +90,7 @@ namespace mesh::peripherals
     lamp_attributes attributes;
   };
 
-  const size_t lamp_multi_update_size = 8;
+  const uint8_t lamp_multi_update_size = 8;
 
   enum class lamp_update_flags : uint8_t
   {

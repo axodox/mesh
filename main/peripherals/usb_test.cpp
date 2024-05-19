@@ -8,11 +8,17 @@
 #include <tinyusb.h>
 
 #define WS281X_PIN 48
+#include "graphics/gamma_correction.hpp"
 #include "ws281x_strip.hpp"
 
 using namespace mesh::graphics;
 using namespace mesh::peripherals;
 using namespace std;
+
+const uint16_t lamp_count = 1;
+color_rgb source_colors[lamp_count];
+color_rgb corrected_colors[lamp_count];
+void update_colors();
 
 const char* string_descriptor[6] = {
   "\x09\x04",                  // 0: is supported language is English (0x0409)
@@ -87,10 +93,10 @@ template <typename T> T* allocate_report(span<uint8_t> buffer)
 uint16_t get_lamp_array_attributes_report(span<uint8_t> buffer)
 {
   auto report = allocate_report<lamp_array_attributes_report>(buffer);
-  report->lamp_count = 1;
+  report->lamp_count = lamp_count;
   report->size = { 200, 200, 200 };
   report->kind = lamp_array_kind::peripheral;
-  report->min_update_interval = lamp_time(100ms);
+  report->min_update_interval = lamp_time(16ms);
   return uint16_t(sizeof(lamp_array_attributes_report));
 }
 
@@ -103,7 +109,7 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
   auto report = allocate_report<lamp_attributes_response_report>(buffer);
   report->attributes = {
     .id = lamp_id++,
-    .position = { 10u * lamp_id, 10u * lamp_id, 10u * lamp_id },
+    .position = { 10u * lamp_id, 10u, 10u },
     .update_latency = lamp_time(2ms),
     .purposes = lamp_purposes::accent,
     .red_level_count = 255,
@@ -114,14 +120,14 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
     .lamp_key = 0,
   };
 
-  if (lamp_id == 1) lamp_id = 0;
+  if (lamp_id == lamp_count) lamp_id = 0;
 
   return uint16_t(sizeof(lamp_attributes_response_report));
 }
 
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t length)
 {
-  printf("Get report %d, len %d\n", report_id, length);
+  printf("Get report %d\n", report_id);
   span<uint8_t> report_buffer{ buffer, length };
 
   switch (report_id)
@@ -144,7 +150,7 @@ void set_lamp_attributes_request_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_attributes_request_report>(buffer);
   lamp_id = report->lamp_id;
-  printf("Lamp attributes request %d\n", lamp_id);
+  //printf("Lamp attributes request %d\n", lamp_id);
 }
 
 void set_lamp_array_control_report(span<const uint8_t> buffer)
@@ -159,8 +165,17 @@ void set_lamp_multi_update_report(span<const uint8_t> buffer)
   auto report = read_report<lamp_multi_update_report>(buffer);
   if (report->count < 1) return;
 
-  color = report->colors[0];
-  printf("Color set %08lx\n", color.v);
+  auto count = min(report->count, lamp_multi_update_size);
+  for (auto i = 0; i < count; i++)
+  {
+    auto lamp_index = report->ids[i];
+    if (lamp_index >= lamp_count) continue;
+
+    auto lamp_color = report->colors[lamp_index];
+    source_colors[lamp_index] = { lamp_color.r, lamp_color.g, lamp_color.b };
+  }
+
+  if (report->update_flags == lamp_update_flags::complete) update_colors();
 }
 
 void set_lamp_range_update_report(span<const uint8_t> buffer)
@@ -168,13 +183,21 @@ void set_lamp_range_update_report(span<const uint8_t> buffer)
   auto report = read_report<lamp_range_update_report>(buffer);
   if (report->start != 0 && report->end >= 1) return;
 
-  color = report->color;
-  printf("Color set %08lx\n", color.v);
+  auto start = min(report->start, lamp_count);
+  auto end = min(report->end, lamp_count);
+  if (start > end) return;
+
+  for (auto i = start; i <= end; i++)
+  {
+    source_colors[i] = { report->color.r, report->color.g, report->color.b };
+  }
+
+  if (report->update_flags == lamp_update_flags::complete) update_colors();
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, const uint8_t* buffer, uint16_t length)
 {
-  printf("Set report %d\n", report_id);
+  //printf("Set report %d\n", report_id);
   span<const uint8_t> report_buffer{ buffer, length };
 
   switch (report_id)
@@ -194,17 +217,18 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   }
 }
 
-unique_ptr<ws281x_strip> _light_strip;
+ws281x_strip strip;
+gamma_correction gamma{ gamma_correction_settings{ .gamma = { 1.6f, 1.5f, 1.6f }, .brightness = 1.f, .max_brightness = 0.7f } };
+
+void update_colors()
+{
+  memcpy(corrected_colors, source_colors, lamp_count * sizeof(color_rgb));
+  gamma.correct_gamma(corrected_colors);
+  strip.push_pixels(corrected_colors);
+}
 
 void setup_usb()
 {
-  _light_strip = std::make_unique<ws281x_strip>();
-
-  color_rgb colors[] = {
-    color_rgb{64, 0, 0}
-  };
-  _light_strip->push_pixels(colors);
-
   tinyusb_config_t usb_config{
     .device_descriptor = device_descriptor,
     .string_descriptor = string_descriptor,

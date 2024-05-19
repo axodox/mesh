@@ -37,5 +37,8 @@ namespace mesh::numerics
     float3& operator-=(const float3& other);
 
     float3 round() const;
+
+    bool operator==(const float3&) const = default;
+    bool operator!=(const float3&) const = default;
   };
 }

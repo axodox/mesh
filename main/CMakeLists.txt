@@ -1,5 +1,6 @@
 idf_component_register(SRCS 
                         "graphics/colors.cpp"
+                        "graphics/gamma_correction.cpp"
 
                         "infrastructure/dependencies.cpp"
                         "infrastructure/error.cpp"
