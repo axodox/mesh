@@ -2,6 +2,7 @@
 #include "usb_descriptors.hpp"
 #include "usb_lamp_array.hpp"
 #include "usb_lamp_array_descriptor.hpp"
+#include "infrastructure/bitwise_operations.hpp"
 #include <array>
 #include <esp_err.h>
 #include <span>
@@ -14,12 +15,16 @@
 #include "ws281x_strip.hpp"
 
 using namespace mesh::graphics;
+using namespace mesh::infrastructure;
 using namespace mesh::peripherals;
 using namespace mesh::numerics;
 using namespace std;
+using namespace std::chrono;
 
 // const uint16_t lamp_count = 1;
+const uint16_t lamp_group_size = 3;
 const uint16_t lamp_count = 219;
+const uint16_t lamp_group_count = lamp_count / lamp_group_size;
 color_rgb source_colors[lamp_count];
 uint8_t gains[lamp_count];
 color_rgb corrected_colors[lamp_count];
@@ -48,7 +53,7 @@ const char* string_descriptor[6] = {
 
 const usb_device_descriptor device_descriptor{
   .vendor_id = 0xa02f,
-  .product_id = 0x0005,
+  .product_id = 0x0006,
   .device_id = 0x0001,
 
   .vendor_name = 1,
@@ -82,16 +87,18 @@ hid_configuration_descriptor{
     .descriptor_count = 1,
     .descriptor_type = usb_descriptor_type::report,
     .descriptor_length = uint16_t(size(lamp_array_report_descriptor)),
-  },  
+  },
   .endpoint_in = {
     .address = usb_endpoint_address(1, usb_endpoint_direction::in),
     .attributes = usb_endpoint_attributes::interrupt,
     .max_packet_size = 64,
+    .interval = 1,
   },
   .endpoint_out = {
     .address = usb_endpoint_address(2, usb_endpoint_direction::out),
     .attributes = usb_endpoint_attributes::interrupt,
     .max_packet_size = 64,
+    .interval = 1,
   },
 };
 
@@ -110,10 +117,10 @@ template <typename T> T* allocate_report(span<uint8_t> buffer)
 uint16_t get_lamp_array_attributes_report(span<uint8_t> buffer)
 {
   auto report = allocate_report<lamp_array_attributes_report>(buffer);
-  report->lamp_count = lamp_count;
+  report->lamp_count = lamp_group_count;
   report->size = lamp_bounding_box;
   report->kind = lamp_array_kind::peripheral;
-  report->min_update_interval = lamp_time(16ms);
+  report->min_update_interval = lamp_time(1ms);
   return uint16_t(sizeof(lamp_array_attributes_report));
 }
 
@@ -126,8 +133,8 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
   auto report = allocate_report<lamp_attributes_response_report>(buffer);
   report->attributes = {
     .id = lamp_id,
-    .position = lamp_positions[lamp_id],
-    .update_latency = lamp_time(2ms),
+    .position = lamp_positions[lamp_id * lamp_group_size],
+    .update_latency = lamp_time(0ms),
     .purposes = lamp_purposes::accent,
     .red_level_count = 255,
     .green_level_count = 255,
@@ -138,7 +145,7 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
   };
 
   lamp_id++;
-  if (lamp_id == lamp_count) lamp_id = 0;
+  if (lamp_id == lamp_group_count) lamp_id = 0;
 
   return uint16_t(sizeof(lamp_attributes_response_report));
 }
@@ -181,38 +188,47 @@ void set_lamp_array_control_report(span<const uint8_t> buffer)
 void set_lamp_multi_update_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_multi_update_report>(buffer);
-  if (report->count < 1) return;
 
-  auto count = min(report->count, lamp_multi_update_size);
-  for (auto i = 0; i < count; i++)
+  if (report->count > 0)
   {
-    auto lamp_index = report->ids[i];
-    if (lamp_index >= lamp_count) continue;
+    auto count = min(report->count, lamp_multi_update_size);
+    for (auto i = 0; i < count; i++)
+    {
+      auto lamp_index = report->ids[i];
+      if (lamp_index >= lamp_group_count) continue;
 
-    auto lamp_color = report->colors[i];
-    source_colors[lamp_index] = { lamp_color.r, lamp_color.g, lamp_color.b };
-    gains[lamp_index] = lamp_color.w;
+      auto lamp_color = report->colors[i];
+      for (auto j = 0; j < lamp_group_size; j++)
+      {
+        source_colors[lamp_index * lamp_group_size + j] = { lamp_color.r, lamp_color.g, lamp_color.b };
+        gains[lamp_index * lamp_group_size + j] = lamp_color.w;
+      }
+    }
   }
 
-  if (report->update_flags == lamp_update_flags::complete) update_colors();
+  if (has_flag(report->update_flags, lamp_update_flags::complete)) update_colors();
 }
 
 void set_lamp_range_update_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_range_update_report>(buffer);
-  if (report->start != 0 && report->end >= 1) return;
 
-  auto start = min(report->start, lamp_count);
-  auto end = min(report->end, lamp_count);
-  if (start > end) return;
+  auto start = min(report->start, lamp_group_count);
+  auto end = min(report->end, lamp_group_count);
 
-  for (auto i = start; i <= end; i++)
+  if (start < end)
   {
-    source_colors[i] = { report->color.r, report->color.g, report->color.b };
-    gains[i] = report->color.w;
+    for (auto i = start; i <= end; i++)
+    {
+      for (auto j = 0; j < lamp_group_size; j++)
+      {
+        source_colors[i * lamp_group_size + j] = { report->color.r, report->color.g, report->color.b };
+        gains[i * lamp_group_size + j] = report->color.w;
+      }
+    }
   }
 
-  if (report->update_flags == lamp_update_flags::complete) update_colors();
+  if (has_flag(report->update_flags, lamp_update_flags::complete)) update_colors();
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, const uint8_t* buffer, uint16_t length)
@@ -240,8 +256,25 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 ws281x_strip strip;
 gamma_correction gamma{ gamma_correction_settings{ .gamma = { 1.6f, 1.5f, 1.6f }, .brightness = 1.f, .max_brightness = 0.7f } };
 
+uint32_t frame_counter = 0;
+steady_clock::time_point last_fps_report = steady_clock::now();
+
 void update_colors()
 {
+  auto now = steady_clock::now();
+
+  auto elapsed = now - last_fps_report;
+  if (elapsed >= 1s)
+  {
+    auto fps = frame_counter / duration_cast<duration<float>>(elapsed).count();
+    printf("%.1f fps\n", fps);
+
+    last_fps_report = now;
+    frame_counter = 0;
+  }
+
+  frame_counter++;
+
   memcpy(corrected_colors, source_colors, lamp_count * sizeof(color_rgb));
   gamma.correct_gamma(corrected_colors, gains);
   strip.push_pixels(corrected_colors);
@@ -262,10 +295,10 @@ void set_lamp_positions(span<lamp_position> positions, lamp_position start, span
   float3 position = to_position(start);
 
   auto it = positions.begin();
-  for(auto segment : segments)
+  for (auto segment : segments)
   {
     float3 step = (to_position(segment.end_position) - position) / segment.light_count;
-    for(auto i = 0; i < segment.light_count; i++)
+    for (auto i = 0; i < segment.light_count; i++)
     {
       position += step;
       *it++ = to_position(position);

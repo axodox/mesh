@@ -129,7 +129,7 @@ namespace mesh::peripherals
     uint8_t address = 0;
     usb_endpoint_attributes attributes = usb_endpoint_attributes::control;
     uint16_t max_packet_size = 0;
-    uint8_t interval = 10;
+    uint8_t interval = 1;
   };
 
   static_assert(sizeof(usb_endpoint_descriptor) == 7);
