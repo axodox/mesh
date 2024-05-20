@@ -21,7 +21,7 @@ namespace mesh::threading
   {
     minimum = 0,
     normal = CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
-    maximum = configMAX_PRIORITIES
+    maximum = configMAX_PRIORITIES - 1
   };
 
   class task

@@ -1,8 +1,10 @@
 #include "usb_test.hpp"
+#include "infrastructure/bitwise_operations.hpp"
+#include "threading/event.hpp"
+#include "threading/task.hpp"
 #include "usb_descriptors.hpp"
 #include "usb_lamp_array.hpp"
 #include "usb_lamp_array_descriptor.hpp"
-#include "infrastructure/bitwise_operations.hpp"
 #include <array>
 #include <esp_err.h>
 #include <span>
@@ -18,6 +20,7 @@ using namespace mesh::graphics;
 using namespace mesh::infrastructure;
 using namespace mesh::peripherals;
 using namespace mesh::numerics;
+using namespace mesh::threading;
 using namespace std;
 using namespace std::chrono;
 
@@ -31,16 +34,16 @@ color_rgb corrected_colors[lamp_count];
 
 lamp_position lamp_positions[lamp_count];
 
-const lamp_array_bounding_box lamp_bounding_box = { 123_cm, 70_cm, 2_cm };
-const lamp_position lamp_start_position = { 123_cm, 70_cm, 2_cm };
+const lamp_array_bounding_box lamp_bounding_box = { 123_cm, 2_cm, 70_cm };
+const lamp_position lamp_start_position = { 2_cm, 1_cm, 68_cm };
 const light_segment lamp_segments[] = {
-  { .light_count = 39, .end_position = { 2_cm, 2_cm, 0_cm } },
-  { .light_count = 70, .end_position = { 121_cm, 2_cm, 0_cm } },
-  { .light_count = 39, .end_position = { 121_cm, 68_cm, 0_cm } },
-  { .light_count = 71, .end_position = { 1_cm, 68_cm, 0_cm } },
+  { .light_count = 39, .end_position = { 2_cm, 1_cm, 2_cm } },
+  { .light_count = 70, .end_position = { 121_cm, 1_cm, 2_cm } },
+  { .light_count = 39, .end_position = { 121_cm, 1_cm, 68_cm } },
+  { .light_count = 71, .end_position = { 2_cm, 1_cm, 68_cm } },
 };
 
-void update_colors();
+event colors_ready;
 
 const char* string_descriptor[6] = {
   "\x09\x04",                  // 0: is supported language is English (0x0409)
@@ -53,7 +56,7 @@ const char* string_descriptor[6] = {
 
 const usb_device_descriptor device_descriptor{
   .vendor_id = 0xa02f,
-  .product_id = 0x0006,
+  .product_id = 0x0007,
   .device_id = 0x0001,
 
   .vendor_name = 1,
@@ -104,7 +107,7 @@ hid_configuration_descriptor{
 
 const uint8_t* tud_hid_descriptor_report_cb(uint8_t instance)
 {
-  printf("Get descriptor %d\n", instance);
+  // printf("Get descriptor %d\n", instance);
   return lamp_array_report_descriptor;
 }
 
@@ -134,7 +137,7 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
   report->attributes = {
     .id = lamp_id,
     .position = lamp_positions[lamp_id * lamp_group_size],
-    .update_latency = lamp_time(0ms),
+    .update_latency = lamp_time(32ms),
     .purposes = lamp_purposes::accent,
     .red_level_count = 255,
     .green_level_count = 255,
@@ -152,7 +155,7 @@ uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
 
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t length)
 {
-  printf("Get report %d\n", report_id);
+  // printf("Get report %d\n", report_id);
   span<uint8_t> report_buffer{ buffer, length };
 
   switch (report_id)
@@ -182,7 +185,7 @@ void set_lamp_array_control_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_array_control_report>(buffer);
   autonomous_mode = report->autonomous_mode;
-  printf("Autonomous mode %d\n", autonomous_mode);
+  // printf("Autonomous mode %d\n", autonomous_mode);
 }
 
 void set_lamp_multi_update_report(span<const uint8_t> buffer)
@@ -206,7 +209,7 @@ void set_lamp_multi_update_report(span<const uint8_t> buffer)
     }
   }
 
-  if (has_flag(report->update_flags, lamp_update_flags::complete)) update_colors();
+  if (has_flag(report->update_flags, lamp_update_flags::complete)) colors_ready.set();
 }
 
 void set_lamp_range_update_report(span<const uint8_t> buffer)
@@ -228,7 +231,7 @@ void set_lamp_range_update_report(span<const uint8_t> buffer)
     }
   }
 
-  if (has_flag(report->update_flags, lamp_update_flags::complete)) update_colors();
+  if (has_flag(report->update_flags, lamp_update_flags::complete)) colors_ready.set();
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, const uint8_t* buffer, uint16_t length)
@@ -261,23 +264,28 @@ steady_clock::time_point last_fps_report = steady_clock::now();
 
 void update_colors()
 {
-  auto now = steady_clock::now();
-
-  auto elapsed = now - last_fps_report;
-  if (elapsed >= 1s)
+  for (;;)
   {
-    auto fps = frame_counter / duration_cast<duration<float>>(elapsed).count();
-    printf("%.1f fps\n", fps);
+    colors_ready.wait(1s);
 
-    last_fps_report = now;
-    frame_counter = 0;
+    auto now = steady_clock::now();
+
+    auto elapsed = now - last_fps_report;
+    if (elapsed >= 1s)
+    {
+      auto fps = frame_counter / duration_cast<duration<float>>(elapsed).count();
+      printf("%.1f fps\n", fps);
+
+      last_fps_report = now;
+      frame_counter = 0;
+    }
+
+    frame_counter++;
+
+    memcpy(corrected_colors, source_colors, lamp_count * sizeof(color_rgb));
+    gamma.correct_gamma(corrected_colors, gains);
+    strip.push_pixels(corrected_colors);
   }
-
-  frame_counter++;
-
-  memcpy(corrected_colors, source_colors, lamp_count * sizeof(color_rgb));
-  gamma.correct_gamma(corrected_colors, gains);
-  strip.push_pixels(corrected_colors);
 }
 
 float3 to_position(lamp_position value)
@@ -297,7 +305,7 @@ void set_lamp_positions(span<lamp_position> positions, lamp_position start, span
   auto it = positions.begin();
   for (auto segment : segments)
   {
-    float3 step = (to_position(segment.end_position) - position) / segment.light_count;
+    float3 step = (to_position(segment.end_position) - position) / (segment.light_count - 1);
     for (auto i = 0; i < segment.light_count; i++)
     {
       position += step;
@@ -305,6 +313,8 @@ void set_lamp_positions(span<lamp_position> positions, lamp_position start, span
     }
   }
 }
+
+std::unique_ptr<task> light_update_task;
 
 void setup_usb()
 {
@@ -317,7 +327,8 @@ void setup_usb()
 
   ranges::fill(source_colors, color_rgb{});
   ranges::fill(gains, 0);
-  update_colors();
+
+  light_update_task = make_unique<task>(&update_colors, task_affinity::core_1, task_priority::maximum);
 
   tinyusb_config_t usb_config{
     .device_descriptor = device_descriptor,
