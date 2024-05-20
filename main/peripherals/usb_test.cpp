@@ -1,6 +1,5 @@
 #include "usb_test.hpp"
 #include "infrastructure/bitwise_operations.hpp"
-#include "threading/event.hpp"
 #include "threading/task.hpp"
 #include "usb_descriptors.hpp"
 #include "usb_lamp_array.hpp"
@@ -24,8 +23,7 @@ using namespace mesh::threading;
 using namespace std;
 using namespace std::chrono;
 
-// const uint16_t lamp_count = 1;
-const uint16_t lamp_group_size = 3;
+const uint16_t lamp_group_size = 1;
 const uint16_t lamp_count = 219;
 const uint16_t lamp_group_count = lamp_count / lamp_group_size;
 color_rgb source_colors[lamp_count];
@@ -43,7 +41,7 @@ const light_segment lamp_segments[] = {
   { .light_count = 71, .end_position = { 2_cm, 1_cm, 68_cm } },
 };
 
-event colors_ready;
+uint32_t frame_counter = 0;
 
 const char* string_descriptor[6] = {
   "\x09\x04",                  // 0: is supported language is English (0x0409)
@@ -168,7 +166,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
   return 0;
 }
 
-template <typename T> const T* read_report(span<const uint8_t> buffer)
+template <typename T> const T* IRAM_ATTR read_report(span<const uint8_t> buffer)
 {
   assert(buffer.size() >= sizeof(T));
   return reinterpret_cast<const T*>(buffer.data());
@@ -185,10 +183,16 @@ void set_lamp_array_control_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_array_control_report>(buffer);
   autonomous_mode = report->autonomous_mode;
+
+  if (autonomous_mode)
+  {
+    ranges::fill(source_colors, color_rgb{});
+    ranges::fill(gains, 0);
+  }
   // printf("Autonomous mode %d\n", autonomous_mode);
 }
 
-void set_lamp_multi_update_report(span<const uint8_t> buffer)
+void IRAM_ATTR set_lamp_multi_update_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_multi_update_report>(buffer);
 
@@ -209,10 +213,10 @@ void set_lamp_multi_update_report(span<const uint8_t> buffer)
     }
   }
 
-  if (has_flag(report->update_flags, lamp_update_flags::complete)) colors_ready.set();
+  if (has_flag(report->update_flags, lamp_update_flags::complete)) frame_counter++;
 }
 
-void set_lamp_range_update_report(span<const uint8_t> buffer)
+void IRAM_ATTR set_lamp_range_update_report(span<const uint8_t> buffer)
 {
   auto report = read_report<lamp_range_update_report>(buffer);
 
@@ -231,10 +235,10 @@ void set_lamp_range_update_report(span<const uint8_t> buffer)
     }
   }
 
-  if (has_flag(report->update_flags, lamp_update_flags::complete)) colors_ready.set();
+  if (has_flag(report->update_flags, lamp_update_flags::complete)) frame_counter++;
 }
 
-void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, const uint8_t* buffer, uint16_t length)
+void IRAM_ATTR tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, const uint8_t* buffer, uint16_t length)
 {
   // printf("Set report %d\n", report_id);
   span<const uint8_t> report_buffer{ buffer, length };
@@ -257,18 +261,22 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 }
 
 ws281x_strip strip;
-gamma_correction gamma{ gamma_correction_settings{ .gamma = { 1.6f, 1.5f, 1.6f }, .brightness = 1.f, .max_brightness = 0.7f } };
+gamma_correction gamma{ gamma_correction_settings{
+  .gamma = { 1.6f, 1.5f, 1.6f }, .brightness = 1.f, .max_brightness = 0.7f, .lerp_factor = 0.1f
+  //.lerp_factor = 1.f
+} };
 
-uint32_t frame_counter = 0;
 steady_clock::time_point last_fps_report = steady_clock::now();
 
 void update_colors()
 {
+  steady_clock::time_point last_update = steady_clock::now();
+
   for (;;)
   {
-    colors_ready.wait(1s);
-
+    this_thread::sleep_until(last_update + 8ms);
     auto now = steady_clock::now();
+    last_update = now;
 
     auto elapsed = now - last_fps_report;
     if (elapsed >= 1s)
@@ -279,8 +287,6 @@ void update_colors()
       last_fps_report = now;
       frame_counter = 0;
     }
-
-    frame_counter++;
 
     memcpy(corrected_colors, source_colors, lamp_count * sizeof(color_rgb));
     gamma.correct_gamma(corrected_colors, gains);

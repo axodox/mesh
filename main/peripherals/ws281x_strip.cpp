@@ -49,10 +49,10 @@ namespace mesh::peripherals
 
   void ws281x_strip::push_pixels(std::span<const graphics::color_rgb> pixels)
   {
-    check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size_bytes(), false));
+    check_result(rmt_write_sample(_channel, reinterpret_cast<const uint8_t*>(pixels.data()), pixels.size_bytes(), true));
     
     const rmt_item32_t resetbit = {{{ 0, 1, _signal_reset_ticks, 0 }}};
-    rmt_write_items(_channel, &resetbit, 1, false);
+    rmt_write_items(_channel, &resetbit, 1, true);
   }
 
   void ws281x_strip::convert_data(

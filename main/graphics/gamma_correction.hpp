@@ -12,6 +12,7 @@ namespace mesh::graphics
     numerics::float3 gamma = { 1.f, 1.f, 1.f };
     float brightness = 1.f;
     float max_brightness = 1.f;
+    float lerp_factor = 1.f;
 
     bool operator==(const gamma_correction_settings&) const = default;
     bool operator!=(const gamma_correction_settings&) const = default;

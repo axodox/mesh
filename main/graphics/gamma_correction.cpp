@@ -42,7 +42,7 @@ namespace mesh::graphics
     float3 sum{};
     for (auto& color : pixels)
     {
-      *buffer_ptr = float3{
+      float3 new_color {
         _gamma_mapping_r[color.r],
         _gamma_mapping_g[color.g],
         _gamma_mapping_b[color.b],
@@ -50,11 +50,17 @@ namespace mesh::graphics
 
       if (gain_ptr)
       {
-        *buffer_ptr *= *gain_ptr++;
+        new_color *= *gain_ptr++;
       }
 
-      sum += *buffer_ptr;
-      buffer_ptr++;
+      if(_settings.lerp_factor != 1.f)
+      {
+        float3 old_color = *buffer_ptr;
+        new_color = old_color * (1.f - _settings.lerp_factor) + new_color * _settings.lerp_factor;
+      }
+
+      *buffer_ptr++ = new_color;
+      sum += new_color;
     }
 
     auto brightness = (sum.x + sum.y + sum.z) / 3.f / 255.f / pixels.size();
