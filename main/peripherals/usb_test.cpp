@@ -23,7 +23,7 @@ using namespace mesh::threading;
 using namespace std;
 using namespace std::chrono;
 
-const uint16_t lamp_group_size = 1;
+const uint16_t lamp_group_size = 3;
 const uint16_t lamp_count = 219;
 const uint16_t lamp_group_count = lamp_count / lamp_group_size;
 color_rgb source_colors[lamp_count];
@@ -262,8 +262,10 @@ void IRAM_ATTR tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_re
 
 ws281x_strip strip;
 gamma_correction gamma{ gamma_correction_settings{
-  .gamma = { 1.6f, 1.5f, 1.6f }, .brightness = 1.f, .max_brightness = 0.7f, .lerp_factor = 0.1f
-  //.lerp_factor = 1.f
+  .gamma = { 1.6f, 1.5f, 1.6f },
+  .brightness = 1.f,
+  .max_brightness = 0.7f,
+  .lerp_factor = 0.2f,
 } };
 
 steady_clock::time_point last_fps_report = steady_clock::now();
