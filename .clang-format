@@ -24,3 +24,4 @@ AccessModifierOffset: -2
 IndentPPDirectives: BeforeHash
 FixNamespaceComments: false
 ConstructorInitializerIndentWidth: 2
+SpaceInEmptyBlock: true
