@@ -7,6 +7,5 @@ namespace mesh::app::light_strip
   struct light_strip_context
   {
     settings::light_strip_settings settings{};
-    threading::event frame_ready;
   };
 }

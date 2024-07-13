@@ -9,10 +9,10 @@ namespace mesh::graphics
 {
   struct gamma_correction_settings
   {
-    numerics::float3 gamma = { 1.f, 1.f, 1.f };
+    numerics::float3 gamma = { 1.6f, 1.6f, 1.6f };
     float brightness = 1.f;
-    float max_brightness = 1.f;
-    float lerp_factor = 1.f;
+    float max_brightness = 0.7f;
+    float lerp_factor = 0.2f;
 
     bool operator==(const gamma_correction_settings&) const = default;
     bool operator!=(const gamma_correction_settings&) const = default;

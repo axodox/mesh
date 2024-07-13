@@ -34,9 +34,7 @@ namespace mesh::app::light_strip::sources
   udp_source::udp_source(light_strip_context& context) :
     light_source(context),
     _thread([=] { receive_data(); }, task_affinity::core_1, task_priority::normal, "udp_source")
-  {
-    _properties.steady_frame_source = false;
-  }
+  { }
 
   light_source_type udp_source::type() const
   {
@@ -116,15 +114,11 @@ namespace mesh::app::light_strip::sources
       last_refresh = now;
       message_id = header.message_id;
 
-      //Read properties
-      _properties.is_passthrough = has_flag(header.flags, light_data_flags::passthrough);
-
       //Read lights
       _buffer = {
         reinterpret_cast<color_rgb*>(buffer.data() + sizeof(light_data_header)),
         reinterpret_cast<color_rgb*>(buffer.data() + min(buffer.size(), sizeof(light_data_header) + sizeof(color_rgb) * header.light_count))
       };
-      _context.frame_ready.set();
 
       this_thread::yield();
     }

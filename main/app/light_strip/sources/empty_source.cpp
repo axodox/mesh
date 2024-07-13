@@ -7,10 +7,7 @@ namespace mesh::app::light_strip::sources
 {
   empty_source::empty_source(light_strip_context& context) :
     light_source(context)
-  {
-    _properties.steady_frame_source = false;
-    _properties.is_passthrough = true;
-  }
+  { }
 
   light_source_type empty_source::type() const
   {

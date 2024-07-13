@@ -52,7 +52,6 @@ namespace mesh::app::light_strip
     while(!_isDisposed)
     {
       auto now = steady_clock::now();
-      auto& source_properties = _source->properties();
 
       //Resize buffer as needed
       if(lights.size() != settings.device.light_count)
@@ -68,10 +67,7 @@ namespace mesh::app::light_strip
       }
 
       //Apply brightness, gamma and dithering
-      if(!source_properties.is_passthrough)
-      {
-        _brightness_processor->process(lights_view);
-      }
+      _brightness_processor->process(lights_view);
 
       //Write pixels
       _strip->push_pixels(lights_view);
@@ -80,21 +76,13 @@ namespace mesh::app::light_strip
       save_settings();
 
       //Wait for next frame
-      if(source_properties.steady_frame_source)
-      {
-        this_thread::sleep_until(now + settings.device.interval);
-      }
-      else
-      {
-        frame_ready.wait(1s);
-      }
+      this_thread::sleep_until(now + settings.device.interval);
     }
   }
 
   void light_strip_controller::apply_brightness_settings()
   {
     _brightness_processor->on_settings_changed();
-    frame_ready.set();
     _last_settings_change = steady_clock::now();
 
     _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
@@ -160,7 +148,6 @@ namespace mesh::app::light_strip
         _source = make_unique<uart_source>(*this);
         break;
       }
-      frame_ready.set();
       _logger.log_message(log_severity::info, "Lighting mode changed.");
     }
     else

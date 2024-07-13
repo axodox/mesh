@@ -7,18 +7,11 @@ namespace mesh::app::light_strip::sources
 {
   static_source::static_source(light_strip_context& context) :
     light_source(context)
-  {
-    _properties.steady_frame_source = false;
-  }
+  { }
 
   light_source_type static_source::type() const
   {
     return light_source_type::static_source;
-  }
-
-  void static_source::on_settings_changed()
-  {
-    _context.frame_ready.set();
   }
 
   const light_source_settings* static_source::get_settings() const

@@ -4,12 +4,6 @@
 
 namespace mesh::app::light_strip::sources
 {
-  struct light_source_properties
-  {
-    bool steady_frame_source = true;
-    bool is_passthrough = false;
-  };
-
   class light_source
   {
   public:
@@ -22,10 +16,7 @@ namespace mesh::app::light_strip::sources
     virtual void on_settings_changed() { };
     virtual void fill(std::span<graphics::color_rgb> pixels) = 0;
 
-    const light_source_properties& properties() const;
-
   protected:
     light_strip_context& _context;
-    light_source_properties _properties{};
   };
 }
