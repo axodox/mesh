@@ -109,15 +109,9 @@ const uint8_t* tud_hid_descriptor_report_cb(uint8_t instance)
   return lamp_array_report_descriptor;
 }
 
-template <typename T> T* allocate_report(span<uint8_t> buffer)
-{
-  assert(buffer.size() >= sizeof(T));
-  return new (buffer.data()) T();
-}
-
 uint16_t get_lamp_array_attributes_report(span<uint8_t> buffer)
 {
-  auto report = allocate_report<lamp_array_attributes_report>(buffer);
+  auto report = allocate_value<lamp_array_attributes_report>(buffer);
   report->lamp_count = lamp_group_count;
   report->size = lamp_bounding_box;
   report->kind = lamp_array_kind::peripheral;
@@ -131,7 +125,7 @@ lamp_color color;
 
 uint16_t get_lamp_attributes_response_report(span<uint8_t> buffer)
 {
-  auto report = allocate_report<lamp_attributes_response_report>(buffer);
+  auto report = allocate_value<lamp_attributes_response_report>(buffer);
   report->attributes = {
     .id = lamp_id,
     .position = lamp_positions[lamp_id * lamp_group_size],
@@ -166,22 +160,16 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
   return 0;
 }
 
-template <typename T> const T* IRAM_ATTR read_report(span<const uint8_t> buffer)
-{
-  assert(buffer.size() >= sizeof(T));
-  return reinterpret_cast<const T*>(buffer.data());
-}
-
 void set_lamp_attributes_request_report(span<const uint8_t> buffer)
 {
-  auto report = read_report<lamp_attributes_request_report>(buffer);
+  auto report = read_value<lamp_attributes_request_report>(buffer);
   lamp_id = report->lamp_id;
   // printf("Lamp attributes request %d\n", lamp_id);
 }
 
 void set_lamp_array_control_report(span<const uint8_t> buffer)
 {
-  auto report = read_report<lamp_array_control_report>(buffer);
+  auto report = read_value<lamp_array_control_report>(buffer);
   autonomous_mode = report->autonomous_mode;
 
   if (autonomous_mode)
@@ -194,7 +182,7 @@ void set_lamp_array_control_report(span<const uint8_t> buffer)
 
 void IRAM_ATTR set_lamp_multi_update_report(span<const uint8_t> buffer)
 {
-  auto report = read_report<lamp_multi_update_report>(buffer);
+  auto report = read_value<lamp_multi_update_report>(buffer);
 
   if (report->count > 0)
   {
@@ -218,7 +206,7 @@ void IRAM_ATTR set_lamp_multi_update_report(span<const uint8_t> buffer)
 
 void IRAM_ATTR set_lamp_range_update_report(span<const uint8_t> buffer)
 {
-  auto report = read_report<lamp_range_update_report>(buffer);
+  auto report = read_value<lamp_range_update_report>(buffer);
 
   auto start = min(report->start, lamp_group_count);
   auto end = min(report->end, lamp_group_count);
@@ -262,7 +250,7 @@ void IRAM_ATTR tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_re
 
 ws281x_strip strip;
 gamma_correction gamma{ gamma_correction_settings{
-  .gamma = { 1.6f, 1.5f, 1.6f },
+  .gamma = { 1.6f, 1.6f, 1.6f },
   .brightness = 1.f,
   .max_brightness = 0.7f,
   .lerp_factor = 0.2f,

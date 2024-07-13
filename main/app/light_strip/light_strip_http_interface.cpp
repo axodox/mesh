@@ -58,7 +58,7 @@ namespace mesh::app::light_strip
 
   void light_strip_http_interface::on_post_brightness(networking::http_query &query)
   {
-    auto body = query.get_text();
+    auto body = query.get_body();
     auto json = json_value::from_string(body);
     if(json_serializer<brightness_processor_settings>::from_json(json, _controller->settings.brightness_processor))
     {
@@ -72,7 +72,7 @@ namespace mesh::app::light_strip
 
   void light_strip_http_interface::on_post_mode(networking::http_query &query)
   {
-    auto body = query.get_text();
+    auto body = query.get_body();
     auto json = json_value::from_string(body);
 
     unique_ptr<light_source_settings> source_settings;
@@ -112,7 +112,7 @@ namespace mesh::app::light_strip
 
   void light_strip_http_interface::on_post_device(networking::http_query &query)
   {
-    auto body = query.get_text();
+    auto body = query.get_body();
     auto json = json_value::from_string(body);
     json_serializer<device_settings>::from_json(json, _controller->settings.device);
     _controller->apply_device_settings();

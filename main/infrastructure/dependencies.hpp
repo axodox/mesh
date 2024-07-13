@@ -29,7 +29,7 @@ namespace mesh::infrastructure
     private:
       dependency_lifetime _lifetime;
       std::shared_ptr<T> _value;
-      std::function<std::unique_ptr<T>()> _factory;
+      std::function<std::shared_ptr<T>()> _factory;
       std::mutex _mutex;
 
     public:
@@ -38,15 +38,15 @@ namespace mesh::infrastructure
       { 
         if constexpr (std::is_default_constructible<T>::value)
         {
-          _factory = [] { return std::make_unique<T>(); };
+          _factory = [] { return std::make_shared<T>(); };
         }
         else
         {
-          _factory = []() -> std::unique_ptr<T> { throw std::logic_error("Cannot construct abstract type."); };
+          _factory = []() -> std::shared_ptr<T> { throw std::logic_error("Cannot construct abstract type."); };
         }
       }
 
-      dependency_registration(dependency_lifetime lifetime, std::function<std::unique_ptr<T>()>&& factory) :
+      dependency_registration(dependency_lifetime lifetime, std::function<std::shared_ptr<T>()>&& factory) :
         _lifetime(lifetime),
         _factory{ std::move(factory) }
       { }
@@ -112,12 +112,27 @@ namespace mesh::infrastructure
     }
 
     template<typename T>
-    bool add(dependency_lifetime lifetime, std::function<std::unique_ptr<T>()>&& factory)
+    bool add(dependency_lifetime lifetime, std::function<std::shared_ptr<T>()>&& factory)
     {
       std::type_index index{ typeid(T) };
 
       std::lock_guard<std::mutex> lock(_mutex);
       return _registrations.emplace(index, std::make_unique<dependency_registration<T>>(lifetime, std::move(factory))).second;
+    }
+
+    template<typename T, typename U>
+    bool add()
+    {
+      return add<T>(dependency_lifetime::singleton, std::function<std::shared_ptr<T>()>([this] { return resolve<U>(); }));
+    }
+
+    template<typename T, typename... TArgs>
+    bool add(TArgs&&... arguments)
+    {
+      std::type_index index{ typeid(T) };
+
+      std::lock_guard<std::mutex> lock(_mutex);
+      return _registrations.emplace(index, std::make_unique<dependency_registration<T>>(dependency_lifetime::singleton, [...args = std::forward<TArgs>(arguments)] { return std::make_shared<T>(args...); })).second;
     }
   };
 

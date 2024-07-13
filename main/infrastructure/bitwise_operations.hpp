@@ -1,6 +1,8 @@
 #pragma once
 #include <type_traits>
 #include <cstring>
+#include <span>
+#include <cstdint>
 
 namespace mesh::infrastructure
 {
@@ -73,5 +75,17 @@ namespace mesh::infrastructure
   bool is_default(const T& value)
   {
     return are_equal<T>(value, T{});
+  }
+
+  template <typename T> T* allocate_value(std::span<std::uint8_t> buffer)
+  {
+    assert(buffer.size() >= sizeof(T));
+    return new (buffer.data()) T();
+  }
+
+  template <typename T> const T* read_value(std::span<const std::uint8_t> buffer)
+  {
+    assert(buffer.size() >= sizeof(T));
+    return reinterpret_cast<const T*>(buffer.data());
   }
 }
