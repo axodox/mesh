@@ -18,8 +18,8 @@ namespace mesh::app::light_strip::processors
     _gamma_correction.configure(_settings->brightness_processor);
   }
 
-  void brightness_processor::process(std::span<graphics::color_rgb> pixels)
+  void brightness_processor::process(std::span<graphics::color_rgb> pixels, std::span<const uint8_t> gains)
   {
-    _gamma_correction.correct_gamma(pixels);
+    _gamma_correction.correct_gamma(pixels, gains);
   }
 }

@@ -90,7 +90,7 @@ namespace {
   };
 
   //Interrupt globals
-  color_rgb source_colors[lamp_count];
+  color_rgb colors[lamp_count];
   uint8_t gains[lamp_count];
   lamp_position lamp_positions[lamp_count];
   
@@ -143,7 +143,7 @@ namespace {
 
     if (autonomous_mode)
     {
-      ranges::fill(source_colors, color_rgb{});
+      ranges::fill(colors, color_rgb{});
       ranges::fill(gains, 0);
     }
   }
@@ -163,7 +163,7 @@ namespace {
         auto lamp_color = report->colors[i];
         for (auto j = 0; j < lamp_group_size; j++)
         {
-          source_colors[lamp_index * lamp_group_size + j] = { lamp_color.r, lamp_color.g, lamp_color.b };
+          colors[lamp_index * lamp_group_size + j] = { lamp_color.r, lamp_color.g, lamp_color.b };
           gains[lamp_index * lamp_group_size + j] = lamp_color.w;
         }
       }
@@ -183,7 +183,7 @@ namespace {
       {
         for (auto j = 0; j < lamp_group_size; j++)
         {
-          source_colors[i * lamp_group_size + j] = { report->color.r, report->color.g, report->color.b };
+          colors[i * lamp_group_size + j] = { report->color.r, report->color.g, report->color.b };
           gains[i * lamp_group_size + j] = report->color.w;
         }
       }
@@ -259,14 +259,14 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
   return 0;
 }
 
-namespace mesh::app::light_strip::sources
+namespace mesh::app::light_strip::sources::usb_lamp_array
 {
-  void enable_usb_lamp_array()
+  void enable()
   {
     set_lamp_positions(lamp_positions, lamp_start_position, lamp_segments);
 
-    ranges::fill(source_colors, color_rgb{});
-    ranges::fill(gains, 0);
+    ranges::fill(::colors, color_rgb{});
+    ranges::fill(::gains, 0);
 
     tinyusb_config_t usb_config{
       .device_descriptor = device_descriptor,
@@ -281,27 +281,23 @@ namespace mesh::app::light_strip::sources
     ESP_ERROR_CHECK(tinyusb_driver_install(&usb_config));
   }
 
-  bool is_in_usb_lamp_array_autonomous_mode()
+  bool is_in_autonomous_mode()
   {
     return autonomous_mode;
   }
 
-  usb_source::usb_source(light_strip_context& context) :
-    light_source(context)
-  { }
-
-  light_source_type usb_source::type() const
+  size_t lamp_count()
   {
-    return light_source_type::usb_source;
+    return ::lamp_count;
   }
 
-  const light_source_settings* usb_source::get_settings() const
+  std::span<const graphics::color_rgb> colors()
   {
-    return &_context.settings.usb_source;
+    return ::colors;
   }
 
-  void usb_source::fill(std::span<graphics::color_rgb> pixels)
+  std::span<const std::uint8_t> gains()
   {
-    memcpy(pixels.data(), source_colors, min(size(source_colors), pixels.size()) * sizeof(color_rgb));
+    return ::gains;
   }
 }

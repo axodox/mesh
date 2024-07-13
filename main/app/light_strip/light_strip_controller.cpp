@@ -2,6 +2,12 @@
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "serialization/json.hpp"
+#include "app/light_strip/sources/empty_source.hpp"
+#include "app/light_strip/sources/static_source.hpp"
+#include "app/light_strip/sources/rainbow_source.hpp"
+#include "app/light_strip/sources/udp_source.hpp"
+#include "app/light_strip/sources/uart_source.hpp"
+#include "app/light_strip/sources/usb_source.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
 #include "storage/file_io.hpp"
 
@@ -61,13 +67,20 @@ namespace mesh::app::light_strip
       }
 
       //Fill buffer
+      if(usb_lamp_array::is_in_autonomous_mode())
       {
-        lock_guard<mutex> lock(_mutex);
-        _source->fill(lights_view);
-      }
+        {
+          lock_guard<mutex> lock(_mutex);
+          _source->fill(lights_view);
+        }
 
-      //Apply brightness, gamma and dithering
-      _brightness_processor->process(lights_view);
+        _brightness_processor->process(lights_view, {});
+      }
+      else
+      {
+        memcpy(lights_view.data(), usb_lamp_array::colors().data(), sizeof(color_rgb) * min(lights_view.size(), usb_lamp_array::lamp_count()));
+        _brightness_processor->process(lights_view, usb_lamp_array::gains());
+      }
 
       //Write pixels
       _strip->push_pixels(lights_view);
@@ -146,9 +159,6 @@ namespace mesh::app::light_strip
         break;
       case light_source_type::uart_source:
         _source = make_unique<uart_source>(*this);
-        break;
-      case light_source_type::usb_source:
-        _source = make_unique<usb_source>(*this);
         break;
       }
       _logger.log_message(log_severity::info, "Lighting mode changed.");

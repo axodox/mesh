@@ -52,7 +52,6 @@ idf_component_register(SRCS
                         "app/light_strip/settings/rainbow_source_settings.cpp"
                         "app/light_strip/settings/udp_source_settings.cpp"
                         "app/light_strip/settings/uart_source_settings.cpp"
-                        "app/light_strip/settings/usb_source_settings.cpp"
                         "app/light_strip/settings/brightness_processor_settings.cpp"
                         "app/light_strip/settings/light_strip_settings.cpp"
                         "app/light_strip/sources/light_source.cpp"

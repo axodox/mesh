@@ -6,7 +6,6 @@
 #include "rainbow_source_settings.hpp"
 #include "udp_source_settings.hpp"
 #include "uart_source_settings.hpp"
-#include "usb_source_settings.hpp"
 
 #define ns mesh::app::light_strip::settings
 
@@ -23,7 +22,6 @@ namespace mesh::app::light_strip::settings
     rainbow_source_settings rainbow_source{};
     udp_source_settings udp_source{};
     uart_source_settings uart_source{};
-    usb_source_settings usb_source{};
   };
 }
 

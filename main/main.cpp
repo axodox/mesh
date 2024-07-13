@@ -37,7 +37,7 @@ using namespace mesh::storage;
 extern "C" void app_main()
 {
   log_message(log_severity::info, "Starting...");
-  enable_usb_lamp_array();
+  usb_lamp_array::enable();
 
   dependencies.add<wifi_connection>("Axodox-Home", "88gypARK");
   dependencies.add<ws281x_strip>(47, ws281x_variant::ws2815);
