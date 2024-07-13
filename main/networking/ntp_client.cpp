@@ -1,5 +1,4 @@
 #include "ntp_client.hpp"
-#include "esp_sntp.h"
 #include "infrastructure/error.hpp"
 
 using namespace mesh::infrastructure;
@@ -8,11 +7,11 @@ namespace mesh::networking
 {
   ntp_client::ntp_client(const char* server)
   {
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, server);
-    sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
-    sntp_set_time_sync_notification_cb(&ntp_client::on_time_synchronized);
-    sntp_init();
+    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    esp_sntp_setservername(0, server);
+    esp_sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
+    esp_sntp_set_time_sync_notification_cb(&ntp_client::on_time_synchronized);
+    esp_sntp_init();
   }
 
   bool ntp_client::is_in_sync() const
@@ -25,7 +24,7 @@ namespace mesh::networking
     _timezone = timezone;
   }
 
-  void ntp_client::on_time_synchronized(timeval* /*time*/)
+  void ntp_client::on_time_synchronized(struct timeval* /*time*/)
   {
     //Set time zone
     setenv("TZ", _timezone, 1);

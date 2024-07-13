@@ -5,10 +5,10 @@ namespace mesh::networking
 {
   enum class http_query_method
   {
-    get = HTTP_GET,
-    post = HTTP_POST,
-    put = HTTP_PUT,
-    del = HTTP_DELETE
+    get = 1,
+    post = 3,
+    put = 4,
+    del = 0
   };
 
   const char* to_string(http_query_method method);

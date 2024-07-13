@@ -1,3 +1,7 @@
 /build
 /out
 /main/www
+/managed_components
+sdkconfig.old
+dependencies.lock
+sdkconfig

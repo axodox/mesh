@@ -1,5 +1,6 @@
 #pragma once
 #include "infrastructure/logger.hpp"
+#include "esp_sntp.h"
 
 namespace mesh::networking
 {

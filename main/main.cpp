@@ -21,11 +21,14 @@
 #include "app/light_strip/light_strip_controller.hpp"
 #include "app/light_strip/light_strip_http_interface.hpp"
 
+#include "app/light_strip/sources/usb_source.hpp"
+
 using namespace std;
 using namespace std::chrono;
 using namespace std::this_thread;
 using namespace mesh::app;
 using namespace mesh::app::light_strip;
+using namespace mesh::app::light_strip::sources;
 using namespace mesh::infrastructure;
 using namespace mesh::networking;
 using namespace mesh::peripherals;
@@ -34,8 +37,11 @@ using namespace mesh::storage;
 extern "C" void app_main()
 {
   log_message(log_severity::info, "Starting...");
-  dependencies.add<wifi_connection>(dependency_lifetime::singleton, []() -> unique_ptr<wifi_connection> { return make_unique<wifi_connection>("Axodox-Ranged", "88gypARK"); });
-  dependencies.add<led_strip>(dependency_lifetime::singleton, []() -> unique_ptr<led_strip> { return make_unique<ws281x_strip>(); });
+  usb_lamp_array::enable();
+
+  dependencies.add<wifi_connection>("Axodox-Home", "88gypARK");
+  dependencies.add<ws281x_strip>(47, ws281x_variant::ws2815);
+  dependencies.add<led_strip, ws281x_strip>();
 
   try
   {
@@ -46,7 +52,6 @@ extern "C" void app_main()
     
     //App
     dependencies.resolve<angular_pages>();
-    dependencies.resolve<integrated_led_blinker>();
     dependencies.resolve<light_strip_controller>();
     dependencies.resolve<light_strip_http_interface>();
     

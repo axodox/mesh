@@ -1,9 +1,22 @@
 #pragma once
 #include <chrono>
-#include <vector>
 
+#include "hwconfig.h"
 #include "led_strip.hpp"
-#include "driver/rmt.h"
+
+#ifdef WS281X_PIN
+#define WS281X_DEFAULT_PIN = WS281X_PIN
+#else
+#define WS281X_DEFAULT_PIN
+#endif
+
+#ifndef WS281X_CHANNEL
+#define WS281X_CHANNEL RMT_CHANNEL_1
+#endif
+
+#ifndef WS281X_VARIANT
+#define WS281X_VARIANT ws2812
+#endif
 
 namespace mesh::peripherals
 {
@@ -16,10 +29,11 @@ namespace mesh::peripherals
   class ws281x_strip : public led_strip
   {
   public:
-    ws281x_strip(ws281x_variant variant = ws281x_variant::ws2815, uint8_t pin = 18, rmt_channel_t channel = RMT_CHANNEL_1);
+    ws281x_strip(uint8_t pin WS281X_DEFAULT_PIN, ws281x_variant variant = ws281x_variant::WS281X_VARIANT, rmt_channel_t channel = WS281X_CHANNEL);
+
     virtual ~ws281x_strip() override;
 
-    virtual void push_pixels(const infrastructure::array_view<graphics::color_rgb>& pixels) override;
+    virtual void push_pixels(std::span<const graphics::color_rgb> pixels) override;
   
   private:
     uint32_t _signal_zero_high_ticks;

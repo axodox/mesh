@@ -2,6 +2,12 @@
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "serialization/json.hpp"
+#include "app/light_strip/sources/empty_source.hpp"
+#include "app/light_strip/sources/static_source.hpp"
+#include "app/light_strip/sources/rainbow_source.hpp"
+#include "app/light_strip/sources/udp_source.hpp"
+#include "app/light_strip/sources/uart_source.hpp"
+#include "app/light_strip/sources/usb_source.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
 #include "storage/file_io.hpp"
 
@@ -48,11 +54,10 @@ namespace mesh::app::light_strip
   void light_strip_controller::worker()
   {
     vector<color_rgb> lights;
-    array_view<color_rgb> lights_view;
+    span<color_rgb> lights_view;
     while(!_isDisposed)
     {
       auto now = steady_clock::now();
-      auto& source_properties = _source->properties();
 
       //Resize buffer as needed
       if(lights.size() != settings.device.light_count)
@@ -62,15 +67,19 @@ namespace mesh::app::light_strip
       }
 
       //Fill buffer
+      if(usb_lamp_array::is_in_autonomous_mode())
       {
-        lock_guard<mutex> lock(_mutex);
-        _source->fill(lights_view);
-      }
+        {
+          lock_guard<mutex> lock(_mutex);
+          _source->fill(lights_view);
+        }
 
-      //Apply brightness, gamma and dithering
-      if(!source_properties.is_passthrough)
+        _brightness_processor->process(lights_view, {});
+      }
+      else
       {
-        _brightness_processor->process(lights_view);
+        memcpy(lights_view.data(), usb_lamp_array::colors().data(), sizeof(color_rgb) * min(lights_view.size(), usb_lamp_array::lamp_count()));
+        _brightness_processor->process(lights_view, usb_lamp_array::gains());
       }
 
       //Write pixels
@@ -80,21 +89,13 @@ namespace mesh::app::light_strip
       save_settings();
 
       //Wait for next frame
-      if(source_properties.steady_frame_source)
-      {
-        this_thread::sleep_until(now + settings.device.interval);
-      }
-      else
-      {
-        frame_ready.wait(1s);
-      }
+      this_thread::sleep_until(now + settings.device.interval);
     }
   }
 
   void light_strip_controller::apply_brightness_settings()
   {
     _brightness_processor->on_settings_changed();
-    frame_ready.set();
     _last_settings_change = steady_clock::now();
 
     _logger.log_message(log_severity::info, "Applied lighting brightness settings.");
@@ -160,7 +161,6 @@ namespace mesh::app::light_strip
         _source = make_unique<uart_source>(*this);
         break;
       }
-      frame_ready.set();
       _logger.log_message(log_severity::info, "Lighting mode changed.");
     }
     else

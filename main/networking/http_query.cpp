@@ -63,7 +63,7 @@ namespace mesh::networking
     check_result(httpd_resp_send_404(_request));
   }
 
-  const infrastructure::array_view<uint8_t> http_query::get_body()
+  const std::string_view http_query::get_body()
   {
     if(_body.empty() && _request->content_len > 0)
     {
@@ -73,12 +73,7 @@ namespace mesh::networking
       _body.back() = 0; //Add zero termination for strings
     }
 
-    return { _body.data(), _body.data() + _request->content_len };
-  }
-
-  const std::string_view http_query::get_text()
-  {
-    return { reinterpret_cast<const char*>(get_body().data()) };
+    return _body;
   }
 
   void http_query::check_has_response(bool set_response)

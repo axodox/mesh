@@ -6,7 +6,6 @@
 #include "infrastructure/dependencies.hpp"
 #include "infrastructure/error.hpp"
 #include "peripherals/uart_stream.hpp"
-#include "peripherals/integrated_led.hpp"
 #include "storage/serializer.hpp"
 
 using namespace std;
@@ -21,11 +20,8 @@ namespace mesh::app::light_strip::sources
 {
   uart_source::uart_source(light_strip_context &context) : 
     light_source(context),
-    _thread([=] { receive_data(); }, task_affinity::core_1, task_priority::normal, "uart_source")
-  {
-    _properties.steady_frame_source = false;
-    _properties.is_passthrough = true;
-  }
+    _thread([this] { receive_data(); }, task_affinity::core_1, task_priority::normal, "uart_source")
+  { }
 
   light_source_type uart_source::type() const
   {
@@ -37,7 +33,7 @@ namespace mesh::app::light_strip::sources
     return &_context.settings.uart_source;
   }
 
-  void uart_source::fill(infrastructure::array_view<graphics::color_rgb> &pixels)
+  void uart_source::fill(std::span<graphics::color_rgb> pixels)
   {
     lock_guard lock(_mutex);
     auto copied_length = min(pixels.size(), _buffer.size()) * sizeof(color_rgb);
@@ -49,10 +45,7 @@ namespace mesh::app::light_strip::sources
 
   void uart_source::receive_data()
   {
-    auto led = dependencies.resolve<integrated_led>();
     vector<color_rgb> front_buffer, back_buffer;
-
-    led->state(false);
 
     uart_stream stream;
     while (_thread.is_running())
@@ -66,9 +59,7 @@ namespace mesh::app::light_strip::sources
       }
 
       //Read header
-      led->state(false);
       auto led_count = read_header(stream);
-      led->state(led_count > 0);
       
       //Try again if later if failed
       if(led_count == 0) continue;
@@ -101,12 +92,9 @@ namespace mesh::app::light_strip::sources
           _buffer = front_buffer;
         }
 
-        _context.frame_ready.set();
         stream.flush();
       }
     }
-
-    led->state(false);
   }
 
   uint32_t uart_source::read_header(storage::stream &stream)

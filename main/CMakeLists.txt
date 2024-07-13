@@ -1,5 +1,6 @@
 idf_component_register(SRCS 
                         "graphics/colors.cpp"
+                        "graphics/gamma_correction.cpp"
 
                         "infrastructure/dependencies.cpp"
                         "infrastructure/error.cpp"
@@ -32,6 +33,7 @@ idf_component_register(SRCS
                         "storage/spiffs.cpp"
                         "storage/file_io.cpp"
                         "storage/stream.cpp"
+                        "storage/memory_stream.cpp"
 
                         "serialization/json/json_value.cpp"
                         "serialization/json/json_null.cpp"
@@ -58,6 +60,7 @@ idf_component_register(SRCS
                         "app/light_strip/sources/rainbow_source.cpp"
                         "app/light_strip/sources/udp_source.cpp"
                         "app/light_strip/sources/uart_source.cpp"
+                        "app/light_strip/sources/usb_source.cpp"
                         "app/light_strip/processors/color_processor.cpp"
                         "app/light_strip/processors/brightness_processor.cpp"
                         "app/light_strip/light_strip_controller.cpp"

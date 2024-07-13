@@ -8,7 +8,7 @@ namespace mesh::app::light_strip::settings
   struct device_settings
   {
     uint32_t light_count = 4;
-    std::chrono::milliseconds interval = std::chrono::milliseconds(16);
+    std::chrono::milliseconds interval = std::chrono::milliseconds(8);
   };
 }
 

@@ -6,7 +6,7 @@ namespace mesh::peripherals
   integrated_led::integrated_led(uint8_t pin) :
     _pin(pin)
   {
-    gpio_pad_select_gpio(_pin);
+    gpio_reset_pin(gpio_num_t(_pin));
     gpio_set_direction(gpio_num_t(_pin), GPIO_MODE_OUTPUT);
     gpio_set_level(gpio_num_t(_pin), 0);
   }

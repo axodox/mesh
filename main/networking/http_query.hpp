@@ -27,13 +27,12 @@ namespace mesh::networking
 
     void return_not_found();
 
-    const infrastructure::array_view<uint8_t> get_body();
-    const std::string_view get_text();
+    const std::string_view get_body();
 
   private:
     httpd_req_t* _request = nullptr;
     bool _has_response = false;
-    std::vector<uint8_t> _body;
+    std::string _body;
 
     void check_has_response(bool set_response = true);
   };
