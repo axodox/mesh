@@ -100,6 +100,9 @@ namespace mesh::app::light_strip
       case light_source_type::uart_source:
         _controller->settings.uart_source = static_cast<const uart_source_settings&>(*source_settings);
         break;
+      case light_source_type::usb_source:
+        _controller->settings.usb_source = static_cast<const usb_source_settings&>(*source_settings);
+        break;
       }
 
       _controller->apply_source_settings();

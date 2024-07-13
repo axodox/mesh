@@ -11,7 +11,8 @@ namespace mesh::app::light_strip::settings
     static_source,
     rainbow_source,
     udp_source,
-    uart_source
+    uart_source,
+    usb_source
   };
 
   struct light_source_settings

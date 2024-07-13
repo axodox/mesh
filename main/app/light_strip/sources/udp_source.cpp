@@ -33,7 +33,7 @@ namespace mesh::app::light_strip::sources
 {
   udp_source::udp_source(light_strip_context& context) :
     light_source(context),
-    _thread([=] { receive_data(); }, task_affinity::core_1, task_priority::normal, "udp_source")
+    _thread([this] { receive_data(); }, task_affinity::core_1, task_priority::normal, "udp_source")
   { }
 
   light_source_type udp_source::type() const

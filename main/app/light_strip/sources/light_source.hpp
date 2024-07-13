@@ -16,6 +16,8 @@ namespace mesh::app::light_strip::sources
     virtual void on_settings_changed() { };
     virtual void fill(std::span<graphics::color_rgb> pixels) = 0;
 
+    virtual std::span<const uint8_t> gains();
+
   protected:
     light_strip_context& _context;
   };

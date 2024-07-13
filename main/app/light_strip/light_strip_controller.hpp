@@ -18,6 +18,7 @@
 #include "app/light_strip/sources/rainbow_source.hpp"
 #include "app/light_strip/sources/udp_source.hpp"
 #include "app/light_strip/sources/uart_source.hpp"
+#include "app/light_strip/sources/usb_source.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
 #include "app/light_strip/settings/light_strip_settings.hpp"
 

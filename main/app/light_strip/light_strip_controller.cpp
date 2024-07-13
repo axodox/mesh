@@ -147,6 +147,9 @@ namespace mesh::app::light_strip
       case light_source_type::uart_source:
         _source = make_unique<uart_source>(*this);
         break;
+      case light_source_type::usb_source:
+        _source = make_unique<usb_source>(*this);
+        break;
       }
       _logger.log_message(log_severity::info, "Lighting mode changed.");
     }

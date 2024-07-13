@@ -28,8 +28,6 @@ idf_component_register(SRCS
                         "peripherals/ws281x_strip.cpp"
                         "peripherals/uart_stream.cpp"
 
-                        "peripherals/usb_test.cpp"
-
                         "storage/embedded.cpp"
                         "storage/nvs.cpp"
                         "storage/spiffs.cpp"
@@ -54,6 +52,7 @@ idf_component_register(SRCS
                         "app/light_strip/settings/rainbow_source_settings.cpp"
                         "app/light_strip/settings/udp_source_settings.cpp"
                         "app/light_strip/settings/uart_source_settings.cpp"
+                        "app/light_strip/settings/usb_source_settings.cpp"
                         "app/light_strip/settings/brightness_processor_settings.cpp"
                         "app/light_strip/settings/light_strip_settings.cpp"
                         "app/light_strip/sources/light_source.cpp"
@@ -62,6 +61,7 @@ idf_component_register(SRCS
                         "app/light_strip/sources/rainbow_source.cpp"
                         "app/light_strip/sources/udp_source.cpp"
                         "app/light_strip/sources/uart_source.cpp"
+                        "app/light_strip/sources/usb_source.cpp"
                         "app/light_strip/processors/color_processor.cpp"
                         "app/light_strip/processors/brightness_processor.cpp"
                         "app/light_strip/light_strip_controller.cpp"
