@@ -12,7 +12,8 @@ namespace mesh::peripherals
     _channel(channel)
   {
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(gpio_num_t(pin), _channel);
-    config.clk_div = 1;    
+    config.clk_div = 1;
+    config.mem_block_num = RMT_CHANNEL_MAX - channel;    
     check_result(rmt_config(&config));
     check_result(rmt_driver_install(_channel, 0, 0));
 

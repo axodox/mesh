@@ -9,6 +9,7 @@
 #include "app/light_strip/sources/uart_source.hpp"
 #include "app/light_strip/sources/usb_source.hpp"
 #include "app/light_strip/processors/brightness_processor.hpp"
+#include "peripherals/ws281x_strip.hpp"
 #include "storage/file_io.hpp"
 
 using namespace std;
@@ -25,14 +26,13 @@ using namespace mesh::app::light_strip::settings;
 
 namespace mesh::app::light_strip
 {
-  light_strip_controller::light_strip_controller() :
-    _strip(dependencies.resolve<peripherals::led_strip>())
+  light_strip_controller::light_strip_controller()
   {
     _logger.log_message(log_severity::info, "Starting...");
     load_settings();
     _brightness_processor = make_unique<brightness_processor>(&settings);
     initialize_source();
-    _thread = make_unique<task>([&] { worker(); }, task_affinity::core_0, task_priority::maximum, "light_strip");
+    _thread = make_unique<task>([&] { worker(); }, task_affinity::core_1, task_priority::maximum, "light_strip");
     _logger.log_message(log_severity::info, "Started.");
   }
 
@@ -53,6 +53,8 @@ namespace mesh::app::light_strip
 
   void light_strip_controller::worker()
   {
+    ws281x_strip strip(47, ws281x_variant::ws2815);
+
     vector<color_rgb> lights;
     span<color_rgb> lights_view;
     while(!_isDisposed)
@@ -83,7 +85,7 @@ namespace mesh::app::light_strip
       }
 
       //Write pixels
-      _strip->push_pixels(lights_view);
+      strip.push_pixels(lights_view);
 
       //Save settings if needed
       save_settings();

@@ -39,9 +39,7 @@ extern "C" void app_main()
   log_message(log_severity::info, "Starting...");
   usb_lamp_array::enable();
 
-  dependencies.add<wifi_connection>("Axodox-Home", "88gypARK");
-  dependencies.add<ws281x_strip>(47, ws281x_variant::ws2815);
-  dependencies.add<led_strip, ws281x_strip>();
+  dependencies.add<wifi_connection>("Axodox-Home", "88gypARK");  
 
   try
   {

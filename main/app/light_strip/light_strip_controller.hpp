@@ -36,7 +36,6 @@ namespace mesh::app::light_strip
 
   private:    
     bool _isDisposed = false;
-    std::shared_ptr<peripherals::led_strip> _strip;
     std::unique_ptr<sources::light_source> _source;
     std::unique_ptr<processors::brightness_processor> _brightness_processor;
     std::mutex _mutex;

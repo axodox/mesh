@@ -33,7 +33,7 @@ namespace mesh::networking
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.max_uri_handlers = uint16_t(_query_handlers.size()) + !_files.empty() + uint16_t(_socket_handlers.size());
     config.lru_purge_enable = true;
-    config.core_id = 1;
+    config.core_id = 0;
     config.global_transport_ctx = this;
     config.global_user_ctx_free_fn = &empty_free;
     check_result(httpd_start(&_server, &config));
